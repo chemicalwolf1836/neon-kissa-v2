@@ -1,0 +1,754 @@
+"use client";
+
+import { useState, useEffect, useRef, useCallback, type ReactElement } from "react";
+
+/* ── TYPES ───────────────────────────────────────────── */
+type Lang = "en" | "jp";
+type Palette = "ruby" | "cyber" | "amber" | "jade";
+type Glass = "highball" | "coupe" | "rocks" | "espresso";
+interface MenuItem {
+  glass: Glass;
+  price: string;
+  priceYen: number;
+  base: string;
+  sweetness: string;
+  vibes: string[];
+  tags: string[];
+  en: { name: string; jp: string; desc: string };
+  jp: { name: string; jp: string; desc: string };
+}
+interface ChatMsg { role: "user" | "bot"; text: string }
+
+/* ── GLASS SVGs ──────────────────────────────────────── */
+const GlassSVG: Record<Glass, ReactElement> = {
+  highball: (
+    <svg width="24" height="30" viewBox="0 0 24 30" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 3h10l-1 24H8z"/><path d="M8 12h8"/>
+    </svg>
+  ),
+  coupe: (
+    <svg width="24" height="30" viewBox="0 0 24 30" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16a8 8 0 0 1-16 0z"/><path d="M12 15v9"/><path d="M7 24h10"/>
+    </svg>
+  ),
+  rocks: (
+    <svg width="24" height="26" viewBox="0 0 24 26" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 8h12l-1 13H7z"/><path d="M8 13h8"/>
+    </svg>
+  ),
+  espresso: (
+    <svg width="24" height="30" viewBox="0 0 24 30" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16a8 8 0 0 1-16 0z"/><path d="M6 9h12"/><path d="M12 15v9"/><path d="M7 24h10"/>
+    </svg>
+  ),
+};
+
+/* ── MENU DATA ───────────────────────────────────────── */
+const MENU: MenuItem[] = [
+  { glass:"highball", price:"¥1,200", priceYen:1200, base:"whiskey", sweetness:"balanced", vibes:["after-work","chill"], tags:["sparkling","refreshing","smoky"],
+    en:{name:"Neon Highball", jp:"ネオン・ハイボール", desc:"Whiskey, citrus, soda, smoked ice"},
+    jp:{name:"ネオン・ハイボール", jp:"Neon Highball", desc:"ウイスキー、柑橘、ソーダ、スモークアイス"} },
+  { glass:"coupe", price:"¥1,600", priceYen:1600, base:"gin", sweetness:"balanced", vibes:["romantic","chill"], tags:["yuzu","floral","refreshing"],
+    en:{name:"Shinjuku Bloom", jp:"新宿ブルーム", desc:"Gin, yuzu, tonic, floral bitters"},
+    jp:{name:"新宿ブルーム", jp:"Shinjuku Bloom", desc:"ジン、ゆず、トニック、フローラルビターズ"} },
+  { glass:"rocks", price:"¥1,400", priceYen:1400, base:"umeshu", sweetness:"sweet", vibes:["after-work","romantic","chill"], tags:["plum","smooth","spice"],
+    en:{name:"Midnight Ume", jp:"ミッドナイト梅", desc:"Umeshu, plum, spice, lime"},
+    jp:{name:"ミッドナイト梅", jp:"Midnight Ume", desc:"梅酒、プラム、スパイス、ライム"} },
+  { glass:"espresso", price:"¥1,700", priceYen:1700, base:"vodka", sweetness:"balanced", vibes:["after-work","party"], tags:["coffee","smooth","dessert"],
+    en:{name:"Cyber Espresso", jp:"サイバー・エスプレッソ", desc:"Vodka, coffee, cocoa, velvet foam"},
+    jp:{name:"サイバー・エスプレッソ", jp:"Cyber Espresso", desc:"ウォッカ、コーヒー、カカオ、ベルベットフォーム"} },
+];
+
+const HERO_IMGS = [
+  "https://images.unsplash.com/photo-1525268323446-0505b6fe7778?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1543007630-9710e4a00a20?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1546171753-97d7676e4602?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1535958636474-b021ee887b13?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1758881606455-26cc1c2c8de4?fm=jpg&q=80&w=2400&auto=format&fit=crop",
+];
+
+/* ── CONTENT ─────────────────────────────────────────── */
+const T = {
+  en: {
+    navMenu:"Menu", navFinder:"Finder", navAtmos:"Atmosphere", navReserve:"Reserve", navAccess:"Access",
+    kicker:"Shinjuku · Tokyo Nightlife",
+    heroA:"A cyber-modern", heroB:"cocktail hideout.",
+    heroSub1:"Bilingual, walk-in friendly, and built for the neon hours.",
+    heroSub2:"Reservations recommended on weekends.",
+    ctaP:"Reserve a seat", ctaS:"Find your cocktail",
+    openLabel:"OPEN NOW · 18:00–03:00",
+    rating:"4.9 / 5", reviews:"120+ guest reviews",
+    badges:["English-friendly","Tourist approved","Cashless OK","Open till 3am"],
+    menuTitle:"Signature Menu", menuSub:"A short, well-made list — easy to read, made to be remembered.",
+    featLabel:"TONIGHT'S PICK",
+    featDesc:"Gin, yuzu and tonic lifted with floral bitters — bright, fragrant, and unmistakably Shinjuku.",
+    featNote:"house favourite",
+    menuNote:"Allergy information available on request.",
+    finderTitle:"Find Your Cocktail", finderSub:"Tell us the mood — our bartender will point you to the right glass.",
+    fMood:"MOOD", fSweet:"SWEETNESS", fLikesLbl:"FLAVOURS YOU LIKE", fLikesPh:"citrus, floral",
+    fAvoidLbl:"ANYTHING TO AVOID", fAvoidPh:"bitter, smoky",
+    bestLabel:"Best match", askAI:"Ask Hana AI", aiPickLabel:"✦ Hana's pick",
+    finderTip:"Your best match updates live as you choose. Tap Ask Hana AI for a personal suggestion.",
+    moodOpts:[{v:"after-work",l:"After-work"},{v:"chill",l:"Chill"},{v:"romantic",l:"Romantic"},{v:"party",l:"Party"}] as {v:string;l:string}[],
+    sweetOpts:[{v:"any",l:"Any"},{v:"dry",l:"Dry"},{v:"balanced",l:"Balanced"},{v:"sweet",l:"Sweet"}] as {v:string;l:string}[],
+    atmosTitle:"The Atmosphere", atmosSub:"A red-lit counter tucked off the main street — see the vibe before you visit.",
+    atmosCap1:"The counter", atmosCap2:"Off Kabukicho",
+    reserveTitle:"Reservations", reserveSub:"A quick request — we confirm by email within 24 hours.",
+    fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
+    fMsg:"Message (optional)", fSend:"Send request", fHint:"We'll reply by email within 24 hours. Walk-ins also welcome.",
+    sentTitle:"Request received", sentMsg:"We'll confirm your booking by email within 24 hours. See you soon.",
+    again:"Make another request", planLabel:"PLAN YOUR NIGHT",
+    planRows:[{k:"Hours",v:"Daily 18:00–03:00"},{k:"Last entry",v:"02:00"},{k:"Walk-ins",v:"Always welcome"},{k:"Cover charge",v:"None"},{k:"Payment",v:"Cash & card"}],
+    askHost:"Ask Hana about your visit",
+    accessTitle:"Find Us", addrLabel:"ADDRESS", addr:"2-2-1 Kabukicho, Shinjuku-ku, Tokyo",
+    hoursLabel:"HOURS", hours:"Daily 18:00–03:00 · Last entry 02:00", phoneLabel:"PHONE",
+    footer:"© 2024 Neon Kissa · Shinjuku, Tokyo",
+    hanaName:"Hana", hanaRole:"Virtual host at Neon Kissa",
+    chatLauncher:"Chat with Hana", chatPh:"Ask about cocktails, hours, or reservations…",
+    chatSugg:["What's on tonight?","Best cocktail for me?","How do I get there?"],
+    chatWelcome:"Irasshaimase! I'm Hana, your host at Neon Kissa. Ask me about cocktails, our hours, or finding a seat. ✦",
+  },
+  jp: {
+    navMenu:"メニュー", navFinder:"カクテル", navAtmos:"雰囲気", navReserve:"予約", navAccess:"アクセス",
+    kicker:"新宿・東京ナイトライフ",
+    heroA:"サイバーモダンな", heroB:"カクテルの隠れ家。",
+    heroSub1:"バイリンガル対応、ウォークイン歓迎、ネオンの夜のために。",
+    heroSub2:"週末のご予約をおすすめします。",
+    ctaP:"席を予約する", ctaS:"カクテルを探す",
+    openLabel:"営業中 · 18:00–03:00",
+    rating:"4.9 / 5", reviews:"120件以上のレビュー",
+    badges:["英語対応","観光客に人気","キャッシュレスOK","深夜3時まで"],
+    menuTitle:"シグネチャーメニュー", menuSub:"厳選された短いリスト — 読みやすく、記憶に残る。",
+    featLabel:"今夜のおすすめ",
+    featDesc:"ジン、ゆず、トニックにフローラルビターズ — 明るく、香り高く、新宿らしい一杯。",
+    featNote:"ハウスフェイバリット",
+    menuNote:"アレルギー情報はご要望に応じてご提供します。",
+    finderTitle:"カクテルを探す", finderSub:"気分を教えてください。バーテンダーが最適なグラスをご案内します。",
+    fMood:"気分", fSweet:"甘さ", fLikesLbl:"好きなフレーバー", fLikesPh:"柑橘、フローラル",
+    fAvoidLbl:"避けたいもの", fAvoidPh:"苦味、スモーキー",
+    bestLabel:"おすすめ", askAI:"花AIに聞く", aiPickLabel:"✦ 花のおすすめ",
+    finderTip:"リアルタイムで更新されます。花AIにパーソナル提案を聞いてみましょう。",
+    moodOpts:[{v:"after-work",l:"仕事帰り"},{v:"chill",l:"リラックス"},{v:"romantic",l:"デート"},{v:"party",l:"盛り上がり"}] as {v:string;l:string}[],
+    sweetOpts:[{v:"any",l:"指定なし"},{v:"dry",l:"ドライ"},{v:"balanced",l:"バランス"},{v:"sweet",l:"甘め"}] as {v:string;l:string}[],
+    atmosTitle:"雰囲気", atmosSub:"大通りを外れた赤いカウンター — 訪れる前に雰囲気を感じてください。",
+    atmosCap1:"カウンター", atmosCap2:"歌舞伎町近く",
+    reserveTitle:"予約", reserveSub:"簡単なリクエスト — 24時間以内にメールで確認します。",
+    fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
+    fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fHint:"24時間以内にメールにてご返信いたします。",
+    sentTitle:"リクエスト受付完了", sentMsg:"24時間以内にご予約確認メールをお送りします。近いうちにお会いしましょう。",
+    again:"別のリクエストをする", planLabel:"ご来店の計画",
+    planRows:[{k:"営業時間",v:"毎日18:00〜03:00"},{k:"最終入場",v:"02:00"},{k:"ウォークイン",v:"いつでも歓迎"},{k:"カバーチャージ",v:"なし"},{k:"お支払い",v:"現金・カード"}],
+    askHost:"花にご相談ください",
+    accessTitle:"アクセス", addrLabel:"住所", addr:"東京都新宿区歌舞伎町2-2-1",
+    hoursLabel:"営業時間", hours:"毎日18:00〜03:00・最終入場02:00", phoneLabel:"電話",
+    footer:"© 2024 ネオン喫茶・東京都新宿区",
+    hanaName:"花", hanaRole:"ネオン喫茶のバーチャルホスト",
+    chatLauncher:"花に話しかける", chatPh:"カクテル・営業時間・予約についてお尋ねください…",
+    chatSugg:["今夜は何がある？","私へのおすすめは？","行き方を教えて"],
+    chatWelcome:"いらっしゃいませ！ネオン喫茶のホスト、花です。カクテル・営業時間・お席のことなど、何でもお尋ねください。✦",
+  },
+};
+
+/* ── UTILITIES ───────────────────────────────────────── */
+function tokenize(s: string) {
+  return (s || "").toLowerCase().split(/[,/| ]+/).map(x => x.trim()).filter(Boolean).slice(0, 10);
+}
+
+function scoreItem(item: MenuItem, mood: string, sweet: string, likes: string, avoid: string) {
+  let s = 0;
+  if (item.vibes.includes(mood)) s += 3;
+  if (sweet !== "any") { if (item.sweetness === sweet) s += 2; else s -= 1; }
+  for (const w of tokenize(likes)) {
+    if (item.tags.includes(w)) s += 2;
+    if (item.en.desc.toLowerCase().includes(w) || item.en.name.toLowerCase().includes(w)) s += 1;
+  }
+  for (const w of tokenize(avoid)) {
+    if (item.tags.includes(w) || item.en.desc.toLowerCase().includes(w)) s -= 5;
+  }
+  return s;
+}
+
+function hanaResponse(q: string, lang: Lang): string {
+  const text = q.toLowerCase();
+  const jp = lang === "jp";
+  if (/hours?|open|clos|time|営業|開|閉/.test(text))
+    return jp ? "毎日18時から深夜3時まで営業しています。最終入場は2時です。✦" : "We're open daily 18:00–03:00, last entry 02:00. ✦";
+  if (/address|where|location|direction|access|map|how.*get|find|住所|場所|アクセス|行き方|駅/.test(text))
+    return jp ? "新宿区歌舞伎町にあります。新宿駅東口から徒歩5分です。✦" : "We're in Kabukicho, Shinjuku — 5 min walk from Shinjuku Station east exit. ✦";
+  if (/reserv|book|seat|table|予約|席|テーブル/.test(text))
+    return jp ? "ページ上の予約フォームからリクエストいただけます。24時間以内にメールで確認します。✦" : "Use the Reserve form on this page — we confirm by email within 24 hours. Walk-ins welcome too! ✦";
+  if (/menu|cocktail|drink|whiskey|gin|vodka|umeshu|beer|メニュー|カクテル|飲|ウイスキー|梅酒/.test(text))
+    return jp ? "シグネチャーカクテルは4種：ネオン・ハイボール¥1,200、新宿ブルーム¥1,600、ミッドナイト梅¥1,400、サイバー・エスプレッソ¥1,700。✦" : "Four cocktails: Neon Highball ¥1,200, Shinjuku Bloom ¥1,600, Midnight Ume ¥1,400, Cyber Espresso ¥1,700. ✦";
+  if (/price|cost|how much|¥|値段|料金|いくら/.test(text))
+    return jp ? "カクテルは¥1,200〜¥1,700。カバーチャージなし。✦" : "Cocktails are ¥1,200–¥1,700. No cover charge. ✦";
+  if (/english|speak|language|英語/.test(text))
+    return jp ? "英語対応スタッフがおります。お気軽にどうぞ。✦" : "Yes — English-friendly staff here, feel right at home! ✦";
+  if (/cash|card|pay|cashless|支払|現金|クレジット/.test(text))
+    return jp ? "現金・カード両方OK。キャッシュレスも対応。✦" : "Both cash and card accepted. Cashless is fine too. ✦";
+  if (/recommend|suggest|best|what should|おすすめ|何がいい/.test(text))
+    return jp ? "カクテルファインダーで気分を選ぶとおすすめが表示されます！✦" : "Try the Cocktail Finder above — pick your mood and I'll point you to the perfect glass! ✦";
+  if (/hello|hi|hey|こんにちは|いらっしゃい/.test(text))
+    return jp ? "いらっしゃいませ！何かお手伝いできますか？✦" : "Irasshaimase! How can I make your evening perfect? ✦";
+  return jp
+    ? "もう少し詳しく教えていただけますか？カクテル、予約、場所などについてお答えします。✦"
+    : "For full details visit us or use the Reserve form — our team will take care of you. ✦";
+}
+
+/* ── MAIN APP ────────────────────────────────────────── */
+export function NeonKissaApp() {
+  const [lang, setLang] = useState<Lang>("en");
+  const [palette, setPalette] = useState<Palette>("jade");
+  const [fMood, setFMood] = useState("after-work");
+  const [fSweet, setFSweet] = useState("any");
+  const [fLikes, setFLikes] = useState("");
+  const [fAvoid, setFAvoid] = useState("");
+  const [aiRec, setAiRec] = useState<{ name: string; reason: string } | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [formSent, setFormSent] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMsgs, setChatMsgs] = useState<ChatMsg[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [showSugg, setShowSugg] = useState(true);
+  const [heroUrl, setHeroUrl] = useState("");
+  const chatBodyRef = useRef<HTMLDivElement>(null);
+  const t = T[lang];
+
+  useEffect(() => {
+    try { const s = localStorage.getItem("nk-lang"); if (s === "en" || s === "jp") setLang(s as Lang); } catch {}
+    try { const p = localStorage.getItem("nk-pal"); if (["ruby","cyber","amber","jade"].includes(p!)) setPalette(p as Palette); } catch {}
+    setHeroUrl(HERO_IMGS[new Date().getDay() % HERO_IMGS.length]);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-palette", palette);
+    try { localStorage.setItem("nk-pal", palette); } catch {}
+  }, [palette]);
+
+  useEffect(() => {
+    try { localStorage.setItem("nk-lang", lang); } catch {}
+  }, [lang]);
+
+  useEffect(() => {
+    if (chatBodyRef.current) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+  }, [chatMsgs, chatLoading]);
+
+  const bestMatch = MENU.map(it => ({ it, score: scoreItem(it, fMood, fSweet, fLikes, fAvoid) }))
+    .sort((a, b) => b.score - a.score)[0].it;
+
+  const askHanaAI = useCallback(() => {
+    setAiLoading(true);
+    setAiRec(null);
+    setTimeout(() => {
+      const d = lang === "jp" ? bestMatch.jp : bestMatch.en;
+      const reason = lang === "jp"
+        ? "今の気分とお好みにぴったりの一杯です。ぜひお試しください。"
+        : "This one matches your mood and flavour preferences perfectly — a great choice for tonight.";
+      setAiRec({ name: d.name, reason });
+      setAiLoading(false);
+    }, 900);
+  }, [bestMatch, lang]);
+
+  const sendChat = useCallback((text: string) => {
+    if (!text.trim() || chatLoading) return;
+    const msg: ChatMsg = { role: "user", text: text.trim() };
+    setChatMsgs(prev => [...prev, msg]);
+    setChatInput("");
+    setShowSugg(false);
+    setChatLoading(true);
+    setTimeout(() => {
+      setChatMsgs(prev => [...prev, { role: "bot", text: hanaResponse(text, lang) }]);
+      setChatLoading(false);
+    }, 700);
+  }, [chatLoading, lang]);
+
+  const openChat = useCallback(() => {
+    setChatOpen(true);
+    if (chatMsgs.length === 0) {
+      setChatMsgs([{ role: "bot", text: t.chatWelcome }]);
+      setShowSugg(true);
+    }
+  }, [chatMsgs.length, t.chatWelcome]);
+
+  const baseLabel: Record<string, Record<Lang, string>> = {
+    whiskey:{en:"Whiskey",jp:"ウイスキー"}, gin:{en:"Gin",jp:"ジン"}, vodka:{en:"Vodka",jp:"ウォッカ"}, umeshu:{en:"Umeshu",jp:"梅酒"},
+  };
+  const sweetLabel: Record<string, Record<Lang, string>> = {
+    dry:{en:"Dry",jp:"ドライ"}, balanced:{en:"Balanced",jp:"バランス"}, sweet:{en:"Sweet",jp:"甘め"},
+  };
+
+  const PALETTES: { key: Palette; color: string; label: string }[] = [
+    { key:"ruby",  color:"#ff2e63", label:"Ruby"  },
+    { key:"cyber", color:"#00e5ff", label:"Cyber" },
+    { key:"amber", color:"#ff9d2e", label:"Amber" },
+    { key:"jade",  color:"#2ee6a0", label:"Jade"  },
+  ];
+
+  /* ── INPUT SHARED STYLES ─────────────────────────── */
+  const inputCls = "w-full bg-black/35 border border-white/10 rounded-[10px] px-[13px] py-[11px] text-white text-sm font-[inherit] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]";
+
+  /* ── RENDER ──────────────────────────────────────── */
+  return (
+    <>
+      {/* GRAIN */}
+      <div aria-hidden className="fixed inset-0 z-[60] pointer-events-none mix-blend-overlay opacity-[.06]"
+        style={{ backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize:"160px 160px" }} />
+
+      {/* ── HEADER ──────────────────────────────────── */}
+      <header className="sticky top-0 z-50 backdrop-blur-[14px] bg-[rgba(11,8,9,.72)] border-b border-white/[.08]">
+        <div className="max-w-[1240px] mx-auto px-8 h-[68px] flex items-center justify-between gap-6">
+          <a href="#top" className="flex items-center gap-[10px] no-underline">
+            <span className="w-[9px] h-[9px] rounded-full bg-[var(--accent)] flex-shrink-0"
+              style={{ boxShadow:"0 0 10px var(--accent),0 0 20px color-mix(in srgb,var(--accent) 60%,transparent)", animation:"nkFlicker 4s infinite" }} />
+            <span className="mono font-bold tracking-[.32em] text-[14px] text-white"
+              style={{ textShadow:"0 0 14px color-mix(in srgb,var(--accent) 50%,transparent)" }}>NEON KISSA</span>
+            <span className="text-[13px] tracking-[.14em]" style={{ color:"#8a7f78" }}>ネオン喫茶</span>
+          </a>
+
+          <nav className="hidden md:flex items-center gap-[30px] text-[13px] tracking-[.05em]">
+            {(["navMenu","navFinder","navAtmos","navReserve","navAccess"] as const).map((k, i) => (
+              <a key={k} href={["#menu","#finder","#atmosphere","#reserve","#access"][i]}
+                className="text-[var(--subtle)] no-underline hover:text-white transition-colors">{t[k]}</a>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-[14px]">
+            <div className="flex items-center gap-[7px] pr-[14px] border-r border-white/10">
+              {PALETTES.map(p => (
+                <button key={p.key} onClick={() => setPalette(p.key)} aria-label={`${p.label} theme`}
+                  className="w-[14px] h-[14px] rounded-full border-none cursor-pointer p-0 outline-none transition-all hover:scale-[1.18]"
+                  style={{ background:p.color, boxShadow:palette===p.key?"0 0 0 2.5px rgba(255,255,255,.7)":"none" }} />
+              ))}
+            </div>
+            <div className="flex border border-white/[.14] rounded-full overflow-hidden mono text-[11px] tracking-[.1em]">
+              {(["en","jp"] as const).map(l => (
+                <button key={l} onClick={() => setLang(l)}
+                  className={`px-3 py-[6px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)]"}`}>
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <a href="#reserve"
+              className="mono text-[12px] tracking-[.14em] no-underline px-4 py-[9px] rounded-full transition-all"
+              style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 40%,transparent)", background:"color-mix(in srgb,var(--accent) 8%,transparent)" }}>
+              {t.navReserve}
+            </a>
+          </div>
+        </div>
+      </header>
+
+      {/* ── HERO ────────────────────────────────────── */}
+      <section id="top" className="relative min-h-[90vh] flex items-end bg-cover bg-center"
+        style={{ backgroundImage:`linear-gradient(90deg,rgba(11,8,9,.96) 0%,rgba(11,8,9,.78) 32%,rgba(11,8,9,.32) 70%,rgba(11,8,9,.55) 100%),linear-gradient(0deg,#0b0809 2%,rgba(11,8,9,.05) 48%),url('${heroUrl}')` }}>
+        <p aria-hidden className="absolute top-[120px] right-[42px] hidden lg:block"
+          style={{ writingMode:"vertical-rl", fontSize:13, letterSpacing:".5em", color:"rgba(255,255,255,.24)" }}>
+          新宿の夜にともる、ひとつの灯
+        </p>
+        <div className="relative max-w-[1240px] w-full mx-auto px-8 pb-[92px]" style={{ animation:"nkRise .7s ease both" }}>
+          <div className="flex items-center gap-[14px] mb-5">
+            <span className="w-[48px] h-px flex-shrink-0" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
+            <span className="mono text-[12px] tracking-[.34em] uppercase" style={{ color:"var(--accent-text)" }}>{t.kicker}</span>
+          </div>
+          <h1 className="m-0 font-black leading-[.98] tracking-[-0.01em] max-w-[14ch]"
+            style={{ fontSize:"clamp(44px,6.6vw,92px)", textShadow:"0 2px 40px rgba(0,0,0,.6)" }}>
+            {t.heroA}<br/>
+            <span style={{ color:"var(--accent)", textShadow:"0 0 22px color-mix(in srgb,var(--accent) 30%,transparent)" }}>{t.heroB}</span>
+          </h1>
+          <p className="mt-[26px] text-[17px] leading-[1.65]" style={{ color:"#cdc3bc", maxWidth:"46ch" }}>
+            {t.heroSub1}<br/><span style={{ color:"#8f857e" }}>{t.heroSub2}</span>
+          </p>
+          <div className="mt-[34px] flex flex-wrap gap-[14px] items-center">
+            <a href="#reserve" className="inline-flex items-center gap-[10px] no-underline font-bold text-[15px] px-[26px] py-[15px] rounded-full text-white transition-all"
+              style={{ background:"var(--accent)", boxShadow:"0 6px 22px color-mix(in srgb,var(--accent) 22%,transparent)" }}>
+              {t.ctaP} <span className="mono">→</span>
+            </a>
+            <a href="#finder" className="inline-flex items-center gap-2 no-underline text-[var(--fg)] text-[15px] px-6 py-[15px] rounded-full border border-white/[.22] transition-all hover:border-white/50 hover:bg-white/[.05]">
+              {t.ctaS}
+            </a>
+          </div>
+          <div className="mt-[30px]">
+            <span className="inline-flex items-center gap-2 mono text-[12px] tracking-[.08em] px-[14px] py-[7px] rounded-full"
+              style={{ color:"#9fe6bf", border:"1px solid rgba(54,224,138,.35)", background:"rgba(54,224,138,.08)" }}>
+              <span className="w-[7px] h-[7px] rounded-full flex-shrink-0"
+                style={{ background:"#36e08a", boxShadow:"0 0 8px #36e08a", animation:"nkPulse 2.4s infinite" }} />
+              {t.openLabel}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TRUST STRIP ─────────────────────────────── */}
+      <div className="border-b border-white/[.07] bg-white/[.015]">
+        <div className="max-w-[1240px] mx-auto px-8 py-[22px] flex flex-wrap items-center justify-between gap-5">
+          <div className="flex items-center gap-[14px]">
+            <span className="text-[18px] tracking-[2px]" style={{ color:"#ffc24b" }}>★★★★★</span>
+            <div>
+              <div className="font-bold text-[15px]">{t.rating}</div>
+              <div className="text-[12px]" style={{ color:"#8a7f78" }}>{t.reviews}</div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-[10px]">
+            {t.badges.map(b => (
+              <span key={b} className="mono text-[11px] tracking-[.06em] px-[13px] py-[7px] rounded-[6px]"
+                style={{ color:"var(--subtle)", border:"1px solid rgba(255,255,255,.12)" }}>{b}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── MENU ────────────────────────────────────── */}
+      <section id="menu" className="max-w-[1240px] mx-auto px-8 pt-[104px] pb-[40px]" style={{ scrollMarginTop:80 }}>
+        <SectionHead num="01" accent="accent" divider="normal" title={t.menuTitle} jp="献立" sub={t.menuSub} />
+
+        {/* Featured */}
+        <div className="grid border border-white/10 rounded-[18px] overflow-hidden mb-[30px] bg-white/[.02]"
+          style={{ gridTemplateColumns:".9fr 1.1fr" }}>
+          <div className="relative min-h-[300px] bg-cover bg-center overflow-hidden"
+            style={{ backgroundImage:`linear-gradient(0deg,rgba(11,8,9,.5),rgba(11,8,9,.02)),url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=1400&auto=format&fit=crop')` }}>
+            <span className="absolute top-[18px] left-[18px] mono text-[11px] tracking-[.18em] text-white px-3 py-[7px] rounded-[6px]"
+              style={{ background:"color-mix(in srgb,var(--accent) 90%,transparent)" }}>{t.featLabel}</span>
+          </div>
+          <div className="p-[38px_40px] flex flex-col justify-center">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span style={{ color:"var(--accent-text)" }}>{GlassSVG.coupe}</span>
+              <h3 className="m-0 font-black text-[30px]">Shinjuku Bloom</h3>
+              <span className="mono text-[14px]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
+            </div>
+            <p className="mt-[14px] text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
+            <div className="mt-[22px] flex items-center gap-[18px]">
+              <span className="mono text-[22px]" style={{ color:"var(--accent)" }}>¥1,600</span>
+              <span className="text-[12px] italic" style={{ color:"#8a7f78" }}>{t.featNote}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Menu grid */}
+        <div className="grid grid-cols-2 gap-[18px] max-md:grid-cols-1">
+          {MENU.filter(it => it.glass !== "coupe").map(item => {
+            const d = lang === "jp" ? item.jp : item.en;
+            return (
+              <div key={item.glass}
+                className="flex justify-between items-start gap-4 p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
+                style={{ borderColor:"rgba(255,255,255,.1)" }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 40%,transparent)")}
+                onMouseLeave={e => (e.currentTarget.style.borderColor="rgba(255,255,255,.1)")}>
+                <div className="flex gap-[14px] items-start">
+                  <span style={{ color:"var(--accent-text)" }}>{GlassSVG[item.glass]}</span>
+                  <div>
+                    <div className="flex items-baseline gap-[10px] flex-wrap">
+                      <p className="m-0 font-bold text-[18px]">{d.name}</p>
+                      <span className="mono text-[12px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
+                    </div>
+                    <p className="mt-2 text-[14px] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+                  </div>
+                </div>
+                <p className="m-0 mono text-[16px] whitespace-nowrap" style={{ color:"var(--accent)" }}>{item.price}</p>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-7 text-center text-[13px]" style={{ color:"#7a6f68" }}>{t.menuNote}</p>
+      </section>
+
+      {/* ── FINDER ──────────────────────────────────── */}
+      <section id="finder" className="max-w-[1240px] mx-auto px-8 pt-[104px] pb-[104px]" style={{ scrollMarginTop:80 }}>
+        <SectionHead num="02" accent="accent2" divider="dual" title={t.finderTitle} jp="一杯を探す" sub={t.finderSub} />
+        <div className="grid grid-cols-2 gap-[22px] items-start max-md:grid-cols-1">
+          {/* Controls */}
+          <div className="border border-white/10 rounded-[18px] p-[30px] bg-white/[.025]">
+            <FilterGroup label={t.fMood} options={t.moodOpts} value={fMood} onChange={setFMood} />
+            <FilterGroup label={t.fSweet} options={t.sweetOpts} value={fSweet} onChange={setFSweet} />
+            <p className="m-0 mb-[10px] text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{t.fLikesLbl}</p>
+            <input className={inputCls} style={{ marginBottom:18 }} placeholder={t.fLikesPh} value={fLikes} onChange={e => setFLikes(e.target.value)} />
+            <p className="m-0 mb-2 text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{t.fAvoidLbl}</p>
+            <input className={inputCls} placeholder={t.fAvoidPh} value={fAvoid} onChange={e => setFAvoid(e.target.value)} />
+            <p className="mt-[18px] text-[12px] leading-[1.5]" style={{ color:"#6f655e" }}>{t.finderTip}</p>
+          </div>
+
+          {/* Best match */}
+          <div className="rounded-[18px] p-[30px]"
+            style={{ border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)", background:"linear-gradient(180deg,color-mix(in srgb,var(--accent) 6%,transparent),rgba(255,255,255,.02))", boxShadow:"0 0 30px color-mix(in srgb,var(--accent) 8%,transparent) inset" }}>
+            <div className="flex items-center justify-between gap-3 mb-[18px]">
+              <span className="mono text-[11px] tracking-[.2em] uppercase" style={{ color:"var(--accent-text)" }}>{t.bestLabel}</span>
+              <span className="mono text-[16px]" style={{ color:"var(--accent)" }}>{bestMatch.price}</span>
+            </div>
+            <div className="flex items-start gap-4">
+              <span style={{ color:"var(--accent-text)", transform:"scale(1.25)", transformOrigin:"top left", flexShrink:0 }}>{GlassSVG[bestMatch.glass]}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-[10px] flex-wrap">
+                  <h3 className="m-0 font-extrabold text-[22px]">{(lang==="jp"?bestMatch.jp:bestMatch.en).name}</h3>
+                  <span className="mono text-[13px]" style={{ color:"#8a7f78" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).jp}</span>
+                </div>
+                <p className="mt-2 text-[14px] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
+                <p className="mt-2 text-[12px]" style={{ color:"#8a7f78" }}>
+                  {(baseLabel[bestMatch.base]||{})[lang]||bestMatch.base} · {(sweetLabel[bestMatch.sweetness]||{})[lang]||bestMatch.sweetness}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-[7px]">
+                  {bestMatch.tags.map(tag => (
+                    <span key={tag} className="text-[11px] px-[10px] py-1 rounded-full"
+                      style={{ color:"#8fd9ff", border:"1px solid rgba(10,170,221,.3)", background:"rgba(10,170,221,.1)" }}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <button onClick={askHanaAI} disabled={aiLoading}
+              className="mt-[22px] w-full inline-flex items-center justify-center gap-2 text-[14px] font-[inherit] px-[18px] py-3 rounded-[12px] cursor-pointer transition-all disabled:opacity-60"
+              style={{ border:"1px solid color-mix(in srgb,var(--accent2) 40%,transparent)", background:"color-mix(in srgb,var(--accent2) 12%,transparent)", color:"#d7b8ff" }}>
+              <span>✦</span><span>{aiLoading ? (lang==="jp"?"確認中…":"Asking Hana…") : t.askAI}</span>
+            </button>
+            {aiRec && (
+              <div className="mt-[14px] rounded-[12px] p-[14px_16px]" style={{ border:"1px solid color-mix(in srgb,var(--accent2) 28%,transparent)", background:"color-mix(in srgb,var(--accent2) 8%,transparent)", animation:"nkPop .3s ease both" }}>
+                <div className="flex items-center justify-between mb-[6px]">
+                  <span className="mono text-[11px]" style={{ color:"#c79bff" }}>{t.aiPickLabel}</span>
+                  <button onClick={() => setAiRec(null)} className="bg-transparent border-none text-[13px] cursor-pointer leading-none p-[2px]" style={{ color:"#8a7f78" }}>✕</button>
+                </div>
+                <p className="m-0 font-bold text-[15px] text-white">{aiRec.name}</p>
+                <p className="mt-1 text-[13px] leading-[1.5]" style={{ color:"var(--subtle)" }}>{aiRec.reason}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── ATMOSPHERE ──────────────────────────────── */}
+      <section id="atmosphere" className="max-w-[1240px] mx-auto px-8 pt-[104px] pb-[104px]" style={{ scrollMarginTop:80 }}>
+        <SectionHead num="03" accent="accent2" divider="dual" title={t.atmosTitle} jp="雰囲気" sub={t.atmosSub} />
+        <div className="grid gap-3 max-md:grid-cols-2" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
+          <AtmosTile url="https://images.unsplash.com/photo-1525268323446-0505b6fe7778?fm=jpg&q=80&w=1600&auto=format&fit=crop" col="1/3" row="1/3" caption={t.atmosCap1} />
+          <AtmosTile url="https://images.unsplash.com/photo-1536935338788-846bb9981813?fm=jpg&q=80&w=800&auto=format&fit=crop" col="3" row="1" />
+          <AtmosTile url="https://images.unsplash.com/photo-1572116469696-31de0f17cc34?fm=jpg&q=80&w=800&auto=format&fit=crop" col="4" row="1/3" />
+          <AtmosTile url="https://images.unsplash.com/photo-1470337458703-46ad1756a187?fm=jpg&q=80&w=800&auto=format&fit=crop" col="3" row="2" />
+          <AtmosTile url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?fm=jpg&q=80&w=800&auto=format&fit=crop" col="1" row="3" />
+          <AtmosTile url="https://images.unsplash.com/photo-1546171753-97d7676e4602?fm=jpg&q=80&w=1200&auto=format&fit=crop" col="2/4" row="3" caption={t.atmosCap2} />
+          <AtmosTile url="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=800&auto=format&fit=crop" col="4" row="3" />
+        </div>
+      </section>
+
+      {/* ── RESERVE ─────────────────────────────────── */}
+      <section id="reserve" className="border-t border-b border-white/[.07] bg-white/[.015]" style={{ scrollMarginTop:80 }}>
+        <div className="max-w-[1240px] mx-auto px-8 pt-[104px] pb-[104px]">
+          <SectionHead num="04" accent="green" divider="green" title={t.reserveTitle} jp="予約" sub={t.reserveSub} />
+          <div className="grid gap-[22px] items-start max-md:grid-cols-1" style={{ gridTemplateColumns:"1.25fr .85fr" }}>
+            <div className="border border-white/[.12] rounded-[18px] p-8 bg-[rgba(11,8,9,.5)]">
+              {!formSent ? (
+                <form onSubmit={e => { e.preventDefault(); setFormSent(true); }} className="flex flex-col gap-4">
+                  <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fName}<input required className={inputCls} /></label>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fEmail}<input required type="email" className={inputCls} /></label>
+                  </div>
+                  <div className="grid gap-4 max-md:grid-cols-1" style={{ gridTemplateColumns:"1fr 1fr 1fr" }}>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fDate}<input type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fTime}<input type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fGuests}<input type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
+                  </div>
+                  <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fMsg}<textarea rows={3} className={inputCls + " resize-y"} /></label>
+                  <button type="submit" className="self-start font-bold text-[15px] font-[inherit] border-none px-7 py-[14px] rounded-full cursor-pointer text-white transition-colors"
+                    style={{ background:"var(--accent)", boxShadow:"0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)" }}>{t.fSend}</button>
+                  <p className="text-[12px]" style={{ color:"#7a6f68" }}>{t.fHint}</p>
+                </form>
+              ) : (
+                <div className="text-center py-[34px]">
+                  <div className="w-[62px] h-[62px] rounded-full mx-auto mb-[18px] flex items-center justify-center text-[30px]"
+                    style={{ background:"rgba(54,224,138,.12)", border:"1px solid rgba(54,224,138,.45)", color:"#36e08a" }}>✓</div>
+                  <h3 className="m-0 font-bold text-[21px]">{t.sentTitle}</h3>
+                  <p className="mt-[10px] mb-[22px] text-[14px]" style={{ color:"var(--muted)" }}>{t.sentMsg}</p>
+                  <button onClick={() => setFormSent(false)} className="bg-transparent border border-white/[.18] font-[inherit] text-[13px] px-5 py-[9px] rounded-full cursor-pointer transition-all hover:text-white hover:border-white/40"
+                    style={{ color:"var(--subtle)" }}>{t.again}</button>
+                </div>
+              )}
+            </div>
+            <div className="border border-white/10 rounded-[18px] p-[30px] bg-white/[.02]">
+              <div className="mono text-[11px] tracking-[.2em] uppercase mb-[18px]" style={{ color:"var(--accent-text)" }}>{t.planLabel}</div>
+              {t.planRows.map(r => (
+                <div key={r.k} className="flex justify-between gap-[14px] py-[13px] border-b border-white/[.07]">
+                  <span className="text-[13px]" style={{ color:"#8a7f78" }}>{r.k}</span>
+                  <span className="text-[13px] text-right" style={{ color:"#e6ddd6" }}>{r.v}</span>
+                </div>
+              ))}
+              <button onClick={openChat} className="inline-flex items-center gap-2 mt-5 mono text-[12px] tracking-[.08em] px-[14px] py-[9px] rounded-full cursor-pointer font-[inherit] transition-all"
+                style={{ color:"#d7b8ff", background:"color-mix(in srgb,var(--accent2) 10%,transparent)", border:"1px solid color-mix(in srgb,var(--accent2) 30%,transparent)" }}>
+                ✦ {t.askHost}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ACCESS ──────────────────────────────────── */}
+      <section id="access" className="max-w-[1240px] mx-auto px-8 pt-[90px] pb-[60px]" style={{ scrollMarginTop:80 }}>
+        <div className="grid grid-cols-2 gap-[48px] items-center max-md:grid-cols-1">
+          <div>
+            <div className="w-16 h-px mb-4" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
+            <h2 className="m-0 font-black mb-[22px]" style={{ fontSize:"clamp(28px,3vw,40px)" }}>
+              {t.accessTitle} <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>道案内</span>
+            </h2>
+            <div className="flex flex-col gap-4 text-[15px]">
+              <div>
+                <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.addrLabel}</div>
+                <div>{t.addr}</div>
+              </div>
+              <div>
+                <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.hoursLabel}</div>
+                <div>{t.hours}</div>
+              </div>
+              <div className="flex gap-[40px]">
+                <div>
+                  <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.phoneLabel}</div>
+                  <div>+81 3-5362-XXXX</div>
+                </div>
+                <div>
+                  <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>Email</div>
+                  <div>hello@neonkissa.jp</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="h-[300px] rounded-[16px] overflow-hidden flex items-center justify-center"
+            style={{ border:"1px dashed rgba(255,255,255,.18)", background:"repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 12px,transparent 12px 24px)" }}>
+            <span className="mono text-[12px] tracking-[.16em]" style={{ color:"#6f655e" }}>[ google maps embed ]</span>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/[.08]">
+        <div className="max-w-[1240px] mx-auto px-8 py-[30px] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-[10px]">
+            <span className="w-2 h-2 rounded-full" style={{ background:"var(--accent)", boxShadow:"0 0 10px var(--accent)" }} />
+            <span className="mono font-bold tracking-[.28em] text-[13px]">NEON KISSA</span>
+          </div>
+          <span className="text-[12px]" style={{ color:"#6f655e" }}>{t.footer}</span>
+        </div>
+      </footer>
+
+      {/* ── CHATBOT ─────────────────────────────────── */}
+      <div className="fixed right-[22px] bottom-[22px] z-[80] flex flex-col items-end gap-[14px]">
+        {chatOpen && (
+          <div className="w-[368px] max-w-[calc(100vw-44px)] flex flex-col rounded-[20px] overflow-hidden"
+            style={{ height:"540px", maxHeight:"calc(100vh - 130px)", background:"rgba(16,11,13,.97)", backdropFilter:"blur(16px)", border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)", boxShadow:"0 24px 70px rgba(0,0,0,.65),0 0 44px color-mix(in srgb,var(--accent) 16%,transparent)", animation:"nkPop .28s ease both" }}>
+            <div className="flex items-center gap-3 p-[16px_18px] border-b border-white/[.08]"
+              style={{ background:"color-mix(in srgb,var(--accent) 6%,transparent)" }}>
+              <div className="w-[40px] h-[40px] rounded-full flex-shrink-0 flex items-center justify-center text-[19px] text-white"
+                style={{ background:"radial-gradient(circle at 35% 30%,var(--accent-text),var(--accent))", boxShadow:"0 0 16px color-mix(in srgb,var(--accent) 55%,transparent)" }}>花</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-[7px]">
+                  <span className="font-bold text-[15px]">{t.hanaName}</span>
+                  <span className="w-[7px] h-[7px] rounded-full" style={{ background:"#36e08a", boxShadow:"0 0 7px #36e08a", animation:"nkPulse 2.4s infinite" }} />
+                </div>
+                <div className="text-[11px]" style={{ color:"#8a7f78" }}>{t.hanaRole}</div>
+              </div>
+              <button onClick={() => setChatOpen(false)} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer" style={{ color:"#8a7f78" }}>✕</button>
+            </div>
+
+            <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-[11px]">
+              {chatMsgs.map((m, i) => (
+                <div key={i} className={`flex ${m.role==="user"?"justify-end":"justify-start"}`}>
+                  <div className="max-w-[82%] px-[13px] py-[10px] rounded-[14px] text-[14px] leading-[1.5] whitespace-pre-wrap"
+                    style={ m.role==="user"
+                      ? { background:"color-mix(in srgb,var(--accent) 20%,transparent)", color:"var(--fg)", border:"1px solid color-mix(in srgb,var(--accent) 35%,transparent)" }
+                      : { background:"rgba(255,255,255,.06)", color:"var(--fg)", border:"1px solid rgba(255,255,255,.1)" }}>
+                    {m.text}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex justify-start">
+                  <div className="flex items-center gap-[5px] px-[15px] py-3 rounded-[14px] bg-white/[.06] border border-white/10">
+                    {[0,.2,.4].map((d,i) => <span key={i} className="w-[6px] h-[6px] rounded-full" style={{ background:"var(--accent-text)", animation:`nkDot 1.2s ${d}s infinite` }} />)}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {showSugg && chatMsgs.length <= 1 && (
+              <div className="flex flex-wrap gap-[7px] px-[18px] pb-3">
+                {t.chatSugg.map(s => (
+                  <button key={s} onClick={() => sendChat(s)}
+                    className="text-[12px] px-3 py-[7px] rounded-full font-[inherit] cursor-pointer transition-all"
+                    style={{ color:"#cdc3bc", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.14)" }}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2 p-[14px_16px] border-t border-white/[.08]">
+              <input className="flex-1 bg-black/40 border border-white/10 rounded-[12px] px-[14px] py-[11px] text-white text-[14px] font-[inherit] outline-none"
+                value={chatInput} onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => e.key==="Enter" && sendChat(chatInput)}
+                placeholder={t.chatPh} />
+              <button onClick={() => sendChat(chatInput)}
+                className="w-[44px] rounded-[12px] border-none text-white text-[17px] flex-shrink-0 cursor-pointer"
+                style={{ background:"var(--accent)", boxShadow:"0 0 16px color-mix(in srgb,var(--accent) 40%,transparent)" }}>→</button>
+            </div>
+          </div>
+        )}
+        <button onClick={openChat}
+          className="inline-flex items-center gap-[10px] border-none text-white font-[inherit] font-bold text-[14px] px-5 py-[13px] rounded-full cursor-pointer"
+          style={{ background:"linear-gradient(135deg,var(--accent),var(--accent2))", boxShadow:"0 8px 30px color-mix(in srgb,var(--accent) 40%,transparent)" }}>
+          <span className="w-[30px] h-[30px] rounded-full bg-white/20 flex items-center justify-center text-[15px]">花</span>
+          {t.chatLauncher}
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* ── SUB-COMPONENTS ──────────────────────────────────── */
+function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; accent:"accent"|"accent2"|"green"; divider:"normal"|"dual"|"green"; title:string; jp:string; sub:string }) {
+  const strokeColor = {
+    accent: "color-mix(in srgb,var(--accent) 50%,transparent)",
+    accent2: "color-mix(in srgb,var(--accent2) 50%,transparent)",
+    green: "rgba(54,224,138,.5)",
+  }[accent];
+  const dividerBg = {
+    normal: "linear-gradient(90deg,var(--accent),transparent)",
+    dual: "linear-gradient(90deg,var(--accent),var(--accent2),transparent)",
+    green: "linear-gradient(90deg,#36e08a,#0ad,transparent)",
+  }[divider];
+  return (
+    <div className="flex items-start gap-7 mb-11">
+      <span className="mono text-[52px] leading-none font-bold flex-shrink-0" style={{ color:"transparent", WebkitTextStroke:`1px ${strokeColor}` }}>{num}</span>
+      <div>
+        <div className="w-16 h-px mb-[14px]" style={{ background:dividerBg }} />
+        <h2 className="m-0 font-black leading-[1.04]" style={{ fontSize:"clamp(30px,3.4vw,44px)" }}>
+          {title} <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>{jp}</span>
+        </h2>
+        <p className="mt-[10px] text-[15px]" style={{ color:"var(--muted)", maxWidth:"52ch" }}>{sub}</p>
+      </div>
+    </div>
+  );
+}
+
+function FilterGroup({ label, options, value, onChange }: { label:string; options:{v:string;l:string}[]; value:string; onChange:(v:string)=>void }) {
+  return (
+    <>
+      <p className="m-0 mb-[10px] text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{label}</p>
+      <div className="flex flex-wrap gap-[9px] mb-[22px]">
+        {options.map(o => (
+          <button key={o.v} onClick={() => onChange(o.v)}
+            className="border rounded-full px-[15px] py-2 text-[13px] font-[inherit] cursor-pointer transition-all"
+            style={ value===o.v
+              ? { borderColor:"color-mix(in srgb,var(--accent) 60%,transparent)", background:"color-mix(in srgb,var(--accent) 12%,transparent)", color:"var(--accent-text)" }
+              : { borderColor:"rgba(255,255,255,.14)", background:"none", color:"var(--subtle)" }}>
+            {o.l}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function AtmosTile({ url, col, row, caption }: { url:string; col:string; row:string; caption?:string }) {
+  return (
+    <div className="relative rounded-[14px] overflow-hidden border border-white/[.08]"
+      style={{ gridColumn:col, gridRow:row }}>
+      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
+        style={{ backgroundImage:`url('${url}')`, transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }}
+        onMouseEnter={e => (e.currentTarget.style.transform="scale(1.06)")}
+        onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")} />
+      {caption && <p className="absolute left-[18px] bottom-[15px] m-0 font-bold text-[16px] pointer-events-none" style={{ textShadow:"0 1px 12px rgba(0,0,0,.6)" }}>{caption}</p>}
+    </div>
+  );
+}

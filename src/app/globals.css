@@ -1,26 +1,65 @@
 @import "tailwindcss";
 
+/* ── PALETTE TOKENS ─────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --accent: #2ee6a0;
+  --accent-hi: #5cf0b8;
+  --accent2: #14b8d8;
+  --accent-text: #8af0c8;
+  --bg: #0b0809;
+  --fg: #f2ece9;
+  --muted: #9a9088;
+  --subtle: #b8aea7;
+}
+[data-palette="ruby"]  { --accent:#ff2e63; --accent-hi:#ff4978; --accent2:#9a3bff; --accent-text:#ff8aa3; }
+[data-palette="cyber"] { --accent:#00e5ff; --accent-hi:#5cf0ff; --accent2:#6a5bff; --accent-text:#7fe9ff; }
+[data-palette="amber"] { --accent:#ff9d2e; --accent-hi:#ffb45c; --accent2:#ff4d6d; --accent-text:#ffce8a; }
+[data-palette="jade"]  { --accent:#2ee6a0; --accent-hi:#5cf0b8; --accent2:#14b8d8; --accent-text:#8af0c8; }
+
+/* ── ANIMATIONS ─────────────────────────────────────── */
+@keyframes nkPulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%     { opacity:.45; transform:scale(.82); }
+}
+@keyframes nkFlicker {
+  0%,93%,100% { opacity:1; }
+  94% { opacity:.55; } 95% { opacity:1; } 97% { opacity:.78; } 98% { opacity:1; }
+}
+@keyframes nkRise {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes nkDot {
+  0%,80%,100% { opacity:.25; transform:translateY(0); }
+  40%         { opacity:1;   transform:translateY(-3px); }
+}
+@keyframes nkPop {
+  from { opacity:0; transform:translateY(12px) scale(.96); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.01ms!important; animation-iteration-count:1!important; }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ── GLOBAL ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--font-zen-kaku, 'Zen Kaku Gothic New', sans-serif);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  margin:0;
 }
+::selection { background:color-mix(in srgb,var(--accent) 32%,transparent); color:#fff; }
+::-webkit-scrollbar { width:10px; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,.14); border-radius:999px; border:3px solid transparent; background-clip:padding-box; }
+::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb,var(--accent) 50%,transparent); background-clip:padding-box; }
+
+/* ── REUSABLE CLASSES ───────────────────────────────── */
+.mono { font-family:var(--font-space-mono, 'Space Mono', monospace); }
+.nk-accent-color  { color:var(--accent); }
+.nk-accent-text   { color:var(--accent-text); }
+.nk-muted         { color:var(--muted); }
+.nk-subtle        { color:var(--subtle); }
