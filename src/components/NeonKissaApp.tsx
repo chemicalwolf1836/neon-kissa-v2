@@ -633,26 +633,26 @@ export function NeonKissaApp() {
         </div>
 
         {/* Menu grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] md:gap-[18px]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-[14px] md:gap-[18px]">
           {MENU.filter(it => it.glass !== "coupe").map(item => {
             const d = lang === "jp" ? item.jp : item.en;
             return (
               <div key={item.glass}
-                className="flex justify-between items-start gap-3 md:gap-4 p-[18px_20px] md:p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
+                className="flex flex-col gap-3 p-[18px_20px] md:p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
                 style={{ borderColor:"rgba(255,255,255,.1)" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 40%,transparent)"; e.currentTarget.style.boxShadow="0 10px 34px color-mix(in srgb,var(--accent) 14%,transparent)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(255,255,255,.1)"; e.currentTarget.style.boxShadow="none"; }}>
-                <div className="flex gap-[12px] md:gap-[14px] items-start">
-                  <span style={{ color:"var(--accent-text)" }}>{GlassSVG[item.glass]}</span>
-                  <div>
-                    <div className="flex items-baseline gap-[8px] md:gap-[10px] flex-wrap">
-                      <p className="m-0 font-bold text-[16px] md:text-[18px]">{d.name}</p>
-                      <span className="mono text-[11px] md:text-[12px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
+                <div className="flex gap-[12px] md:gap-[14px] items-start flex-1">
+                  <span style={{ color:"var(--accent-text)", flexShrink:0 }}>{GlassSVG[item.glass]}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-[8px] flex-wrap">
+                      <p className="m-0 font-bold text-[16px] md:text-[17px]">{d.name}</p>
+                      <span className="mono text-[11px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
                     </div>
-                    <p className="mt-[6px] md:mt-2 text-[13px] md:text-[14px] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+                    <p className="mt-[6px] md:mt-2 text-[13px] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
                   </div>
                 </div>
-                <p className="m-0 mono text-[15px] md:text-[16px] whitespace-nowrap" style={{ color:"var(--accent)" }}>{item.price}</p>
+                <p className="m-0 mono text-[16px] md:text-[17px] mt-auto pt-[10px]" style={{ color:"var(--accent)" }}>{item.price}</p>
               </div>
             );
           })}
