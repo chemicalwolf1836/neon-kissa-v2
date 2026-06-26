@@ -125,6 +125,7 @@ const T = {
     heroSub2:"Reservations recommended on weekends.",
     ctaP:"Reserve a seat", ctaS:"Find your cocktail",
     openLabel:"OPEN NOW · 18:00–03:00",
+    openOpen:"OPEN NOW · until 03:00", openClosed:"OPENS TONIGHT · 18:00",
     rating:"4.9 / 5", reviews:"120+ guest reviews",
     badges:["English-friendly","Tourist approved","Cashless OK","Open till 3am"],
     menuTitle:"Signature Menu", menuSub:"A short, well-made list — easy to read, made to be remembered.",
@@ -166,6 +167,7 @@ const T = {
     heroSub2:"週末のご予約をおすすめします。",
     ctaP:"席を予約する", ctaS:"カクテルを探す",
     openLabel:"営業中 · 18:00–03:00",
+    openOpen:"営業中 · 03:00まで", openClosed:"本日 18:00 オープン",
     rating:"4.9 / 5", reviews:"120件以上のレビュー",
     badges:["英語対応","観光客に人気","キャッシュレスOK","深夜3時まで"],
     menuTitle:"シグネチャーメニュー", menuSub:"厳選された短いリスト — 読みやすく、記憶に残る。",
@@ -270,6 +272,8 @@ export function NeonKissaApp() {
   const [navOpen, setNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [openNow, setOpenNow] = useState<boolean | null>(null);
   const [activeSection, setActiveSection] = useState<string>("");
   const chatBodyRef = useRef<HTMLDivElement>(null);
 
@@ -289,6 +293,8 @@ export function NeonKissaApp() {
     setHeroUrl(HERO_IMGS[today % HERO_IMGS.length]);
     setAtmosSetIdx(today % ATMOS_PHOTO_IDS.length);
     setFeatImg(FEAT_IMG_IDS[today % FEAT_IMG_IDS.length]);
+    const nowH = new Date().getHours() + new Date().getMinutes() / 60;
+    setOpenNow(nowH >= 18 || nowH < 3); // open daily 18:00–03:00
   }, []);
 
   useEffect(() => {
@@ -319,9 +325,15 @@ export function NeonKissaApp() {
     return () => document.removeEventListener("click", close);
   }, [navOpen]);
 
-  /* Scroll-to-top visibility */
+  /* Scroll-to-top visibility + progress beam */
   useEffect(() => {
-    const onScroll = () => setShowScrollTop(window.scrollY > 500);
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - window.innerHeight;
+      setScrollProgress(max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0);
+      setShowScrollTop(window.scrollY > 500);
+    };
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -423,9 +435,17 @@ export function NeonKissaApp() {
   /* Current atmosphere tile IDs (updates once per day on mount) */
   const atmos = ATMOS_PHOTO_IDS[atmosSetIdx];
 
+  /* Live open/closed status (computed client-side to avoid hydration mismatch) */
+  const openText = openNow === null ? t.openLabel : openNow ? t.openOpen : t.openClosed;
+  const openDot  = openNow === false ? "#ff9d2e" : "#36e08a";
+
   /* ── RENDER ──────────────────────────────────────── */
   return (
     <>
+      {/* SCROLL PROGRESS BEAM */}
+      <div aria-hidden className="fixed top-0 left-0 h-[2px] z-[70] pointer-events-none"
+        style={{ width:`${scrollProgress * 100}%`, background:"linear-gradient(90deg,var(--accent),var(--accent2))", boxShadow:"0 0 10px var(--accent),0 0 4px var(--accent)" }} />
+
       {/* GRAIN */}
       <div aria-hidden className="fixed inset-0 z-[60] pointer-events-none mix-blend-overlay opacity-[.06]"
         style={{ backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize:"160px 160px" }} />
@@ -449,12 +469,12 @@ export function NeonKissaApp() {
               const isActive = activeSection === NAV_IDS[i];
               return (
                 <a key={k} href={NAV_LINKS[i]}
-                  className="relative no-underline transition-colors pb-[3px]"
-                  style={{ color: isActive ? "var(--accent-text)" : "var(--subtle)" }}>
+                  className="relative no-underline transition-all pb-[3px]"
+                  style={{ color: isActive ? "#fff" : "var(--subtle)", textShadow: isActive ? "0 0 14px color-mix(in srgb,var(--accent) 60%,transparent)" : "none" }}>
                   {t[k]}
                   {isActive && (
                     <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
-                      style={{ background:"var(--accent)", boxShadow:"0 0 6px var(--accent)" }} />
+                      style={{ background:"var(--accent)", boxShadow:"0 0 8px var(--accent),0 0 3px var(--accent)" }} />
                   )}
                 </a>
               );
@@ -556,10 +576,10 @@ export function NeonKissaApp() {
           </div>
           <div className="mt-[24px] md:mt-[30px]">
             <span className="inline-flex items-center gap-2 mono text-[11px] md:text-[12px] tracking-[.08em] px-[12px] md:px-[14px] py-[7px] rounded-full"
-              style={{ color:"#9fe6bf", border:"1px solid rgba(54,224,138,.35)", background:"rgba(54,224,138,.08)" }}>
+              style={{ color:"#cdc3bc", border:"1px solid rgba(255,255,255,.14)", background:"rgba(255,255,255,.03)" }}>
               <span className="w-[7px] h-[7px] rounded-full flex-shrink-0"
-                style={{ background:"#36e08a", boxShadow:"0 0 8px #36e08a", animation:"nkPulse 2.4s infinite" }} />
-              {t.openLabel}
+                style={{ background:openDot, boxShadow:`0 0 8px ${openDot}`, animation:"nkPulse 2.4s infinite" }} />
+              {openText}
             </span>
           </div>
         </div>
@@ -620,8 +640,8 @@ export function NeonKissaApp() {
               <div key={item.glass}
                 className="flex justify-between items-start gap-3 md:gap-4 p-[18px_20px] md:p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
                 style={{ borderColor:"rgba(255,255,255,.1)" }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 40%,transparent)")}
-                onMouseLeave={e => (e.currentTarget.style.borderColor="rgba(255,255,255,.1)")}>
+                onMouseEnter={e => { e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 40%,transparent)"; e.currentTarget.style.boxShadow="0 10px 34px color-mix(in srgb,var(--accent) 14%,transparent)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(255,255,255,.1)"; e.currentTarget.style.boxShadow="none"; }}>
                 <div className="flex gap-[12px] md:gap-[14px] items-start">
                   <span style={{ color:"var(--accent-text)" }}>{GlassSVG[item.glass]}</span>
                   <div>
