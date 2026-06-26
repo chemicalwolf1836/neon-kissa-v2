@@ -332,11 +332,13 @@ export function NeonKissaApp() {
       const max = doc.scrollHeight - window.innerHeight;
       setScrollProgress(max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0);
       setShowScrollTop(window.scrollY > 500);
+      // Force access active when near page bottom (last section is short)
+      if (max > 0 && window.scrollY >= max - 80) setActiveSection("access");
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [setActiveSection]);
 
   /* Active nav scroll-spy */
   useEffect(() => {
