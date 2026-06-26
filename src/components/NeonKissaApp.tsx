@@ -213,6 +213,8 @@ export function NeonKissaApp() {
   const [chatLoading, setChatLoading] = useState(false);
   const [showSugg, setShowSugg] = useState(true);
   const [heroUrl, setHeroUrl] = useState("");
+  const [navOpen, setNavOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const t = T[lang];
 
@@ -220,6 +222,13 @@ export function NeonKissaApp() {
     try { const s = localStorage.getItem("nk-lang"); if (s === "en" || s === "jp") setLang(s as Lang); } catch {}
     try { const p = localStorage.getItem("nk-pal"); if (["ruby","cyber","amber","jade"].includes(p!)) setPalette(p as Palette); } catch {}
     setHeroUrl(HERO_IMGS[new Date().getDay() % HERO_IMGS.length]);
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   useEffect(() => {
@@ -234,6 +243,14 @@ export function NeonKissaApp() {
   useEffect(() => {
     if (chatBodyRef.current) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
   }, [chatMsgs, chatLoading]);
+
+  /* Close mobile nav when a link is tapped */
+  useEffect(() => {
+    if (!navOpen) return;
+    const close = () => setNavOpen(false);
+    document.addEventListener("click", close, { once: true });
+    return () => document.removeEventListener("click", close);
+  }, [navOpen]);
 
   const bestMatch = MENU.map(it => ({ it, score: scoreItem(it, fMood, fSweet, fLikes, fAvoid) }))
     .sort((a, b) => b.score - a.score)[0].it;
@@ -286,8 +303,9 @@ export function NeonKissaApp() {
     { key:"jade",  color:"#2ee6a0", label:"Jade"  },
   ];
 
-  /* ── INPUT SHARED STYLES ─────────────────────────── */
   const inputCls = "w-full bg-black/35 border border-white/10 rounded-[10px] px-[13px] py-[11px] text-white text-sm font-[inherit] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]";
+  const NAV_LINKS = ["#menu","#finder","#atmosphere","#reserve","#access"] as const;
+  const NAV_KEYS  = ["navMenu","navFinder","navAtmos","navReserve","navAccess"] as const;
 
   /* ── RENDER ──────────────────────────────────────── */
   return (
@@ -298,78 +316,117 @@ export function NeonKissaApp() {
 
       {/* ── HEADER ──────────────────────────────────── */}
       <header className="sticky top-0 z-50 backdrop-blur-[14px] bg-[rgba(11,8,9,.72)] border-b border-white/[.08]">
-        <div className="max-w-[1240px] mx-auto px-8 h-[68px] flex items-center justify-between gap-6">
-          <a href="#top" className="flex items-center gap-[10px] no-underline">
-            <span className="w-[9px] h-[9px] rounded-full bg-[var(--accent)] flex-shrink-0"
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 h-[60px] md:h-[68px] flex items-center justify-between gap-3">
+
+          {/* Logo */}
+          <a href="#top" className="flex items-center gap-[10px] no-underline flex-shrink-0" onClick={() => setNavOpen(false)}>
+            <span className="w-[8px] h-[8px] rounded-full bg-[var(--accent)] flex-shrink-0"
               style={{ boxShadow:"0 0 10px var(--accent),0 0 20px color-mix(in srgb,var(--accent) 60%,transparent)", animation:"nkFlicker 4s infinite" }} />
-            <span className="mono font-bold tracking-[.32em] text-[14px] text-white"
+            <span className="mono font-bold tracking-[.28em] text-[13px] md:text-[14px] text-white"
               style={{ textShadow:"0 0 14px color-mix(in srgb,var(--accent) 50%,transparent)" }}>NEON KISSA</span>
-            <span className="text-[13px] tracking-[.14em]" style={{ color:"#8a7f78" }}>ネオン喫茶</span>
+            <span className="hidden sm:inline text-[12px] tracking-[.12em]" style={{ color:"#8a7f78" }}>ネオン喫茶</span>
           </a>
 
+          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-[30px] text-[13px] tracking-[.05em]">
-            {(["navMenu","navFinder","navAtmos","navReserve","navAccess"] as const).map((k, i) => (
-              <a key={k} href={["#menu","#finder","#atmosphere","#reserve","#access"][i]}
+            {NAV_KEYS.map((k, i) => (
+              <a key={k} href={NAV_LINKS[i]}
                 className="text-[var(--subtle)] no-underline hover:text-white transition-colors">{t[k]}</a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-[14px]">
-            <div className="flex items-center gap-[7px] pr-[14px] border-r border-white/10">
+          {/* Right controls */}
+          <div className="flex items-center gap-[10px] md:gap-[14px]">
+            {/* Palette swatches */}
+            <div className="flex items-center gap-[6px] pr-[10px] md:pr-[14px] border-r border-white/10">
               {PALETTES.map(p => (
                 <button key={p.key} onClick={() => setPalette(p.key)} aria-label={`${p.label} theme`}
-                  className="w-[14px] h-[14px] rounded-full border-none cursor-pointer p-0 outline-none transition-all hover:scale-[1.18]"
+                  className="w-[12px] h-[12px] md:w-[14px] md:h-[14px] rounded-full border-none cursor-pointer p-0 outline-none transition-all hover:scale-[1.18]"
                   style={{ background:p.color, boxShadow:palette===p.key?"0 0 0 2.5px rgba(255,255,255,.7)":"none" }} />
               ))}
             </div>
+            {/* Lang toggle */}
             <div className="flex border border-white/[.14] rounded-full overflow-hidden mono text-[11px] tracking-[.1em]">
               {(["en","jp"] as const).map(l => (
                 <button key={l} onClick={() => setLang(l)}
-                  className={`px-3 py-[6px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)]"}`}>
+                  className={`px-[10px] md:px-3 py-[6px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)]"}`}>
                   {l.toUpperCase()}
                 </button>
               ))}
             </div>
+            {/* Reserve button — hidden on mobile */}
             <a href="#reserve"
-              className="mono text-[12px] tracking-[.14em] no-underline px-4 py-[9px] rounded-full transition-all"
+              className="hidden sm:inline-flex mono text-[12px] tracking-[.14em] no-underline px-4 py-[9px] rounded-full transition-all"
               style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 40%,transparent)", background:"color-mix(in srgb,var(--accent) 8%,transparent)" }}>
               {t.navReserve}
             </a>
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={e => { e.stopPropagation(); setNavOpen(o => !o); }}
+              aria-label="Toggle navigation"
+              aria-expanded={navOpen}
+              className="flex md:hidden flex-col justify-center items-center gap-[5px] w-[36px] h-[36px] bg-transparent border border-white/[.14] rounded-[8px] cursor-pointer p-0">
+              <span className="block w-[16px] h-[1.5px] bg-white transition-all" style={{ transform: navOpen ? "rotate(45deg) translate(4.5px,4.5px)" : "none" }} />
+              <span className="block w-[16px] h-[1.5px] bg-white transition-all" style={{ opacity: navOpen ? 0 : 1 }} />
+              <span className="block w-[16px] h-[1.5px] bg-white transition-all" style={{ transform: navOpen ? "rotate(-45deg) translate(4.5px,-4.5px)" : "none" }} />
+            </button>
           </div>
         </div>
+
+        {/* Mobile nav dropdown */}
+        {navOpen && (
+          <nav className="md:hidden border-t border-white/[.08] bg-[rgba(11,8,9,.96)]"
+            onClick={e => e.stopPropagation()}>
+            {NAV_KEYS.map((k, i) => (
+              <a key={k} href={NAV_LINKS[i]} onClick={() => setNavOpen(false)}
+                className="flex items-center px-5 py-[15px] text-[15px] tracking-[.03em] no-underline border-b border-white/[.06] transition-colors hover:bg-white/[.04]"
+                style={{ color:"var(--subtle)" }}>
+                <span className="flex-1">{t[k]}</span>
+                <span className="mono text-[11px]" style={{ color:"var(--accent-text)" }}>→</span>
+              </a>
+            ))}
+            <div className="px-5 py-4">
+              <a href="#reserve" onClick={() => setNavOpen(false)}
+                className="block w-full text-center mono text-[13px] tracking-[.1em] no-underline px-4 py-[12px] rounded-full"
+                style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 40%,transparent)", background:"color-mix(in srgb,var(--accent) 8%,transparent)" }}>
+                {t.navReserve}
+              </a>
+            </div>
+          </nav>
+        )}
       </header>
 
       {/* ── HERO ────────────────────────────────────── */}
-      <section id="top" className="relative min-h-[90vh] flex items-end bg-cover bg-center"
+      <section id="top" className="relative min-h-[85vh] md:min-h-[90vh] flex items-end bg-cover bg-center"
         style={{ backgroundImage:`linear-gradient(90deg,rgba(11,8,9,.96) 0%,rgba(11,8,9,.78) 32%,rgba(11,8,9,.32) 70%,rgba(11,8,9,.55) 100%),linear-gradient(0deg,#0b0809 2%,rgba(11,8,9,.05) 48%),url('${heroUrl}')` }}>
         <p aria-hidden className="absolute top-[120px] right-[42px] hidden lg:block"
           style={{ writingMode:"vertical-rl", fontSize:13, letterSpacing:".5em", color:"rgba(255,255,255,.24)" }}>
           新宿の夜にともる、ひとつの灯
         </p>
-        <div className="relative max-w-[1240px] w-full mx-auto px-8 pb-[92px]" style={{ animation:"nkRise .7s ease both" }}>
-          <div className="flex items-center gap-[14px] mb-5">
-            <span className="w-[48px] h-px flex-shrink-0" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
-            <span className="mono text-[12px] tracking-[.34em] uppercase" style={{ color:"var(--accent-text)" }}>{t.kicker}</span>
+        <div className="relative max-w-[1240px] w-full mx-auto px-4 sm:px-8 pb-[56px] md:pb-[92px]" style={{ animation:"nkRise .7s ease both" }}>
+          <div className="flex items-center gap-[14px] mb-4 md:mb-5">
+            <span className="w-[32px] md:w-[48px] h-px flex-shrink-0" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
+            <span className="mono text-[11px] md:text-[12px] tracking-[.28em] md:tracking-[.34em] uppercase" style={{ color:"var(--accent-text)" }}>{t.kicker}</span>
           </div>
-          <h1 className="m-0 font-black leading-[.98] tracking-[-0.01em] max-w-[14ch]"
-            style={{ fontSize:"clamp(44px,6.6vw,92px)", textShadow:"0 2px 40px rgba(0,0,0,.6)" }}>
+          <h1 className="m-0 font-black leading-[.98] tracking-[-0.01em]"
+            style={{ fontSize:"clamp(38px,8vw,92px)", textShadow:"0 2px 40px rgba(0,0,0,.6)", maxWidth:"14ch" }}>
             {t.heroA}<br/>
             <span style={{ color:"var(--accent)", textShadow:"0 0 22px color-mix(in srgb,var(--accent) 30%,transparent)" }}>{t.heroB}</span>
           </h1>
-          <p className="mt-[26px] text-[17px] leading-[1.65]" style={{ color:"#cdc3bc", maxWidth:"46ch" }}>
+          <p className="mt-[20px] md:mt-[26px] text-[15px] md:text-[17px] leading-[1.65]" style={{ color:"#cdc3bc", maxWidth:"42ch" }}>
             {t.heroSub1}<br/><span style={{ color:"#8f857e" }}>{t.heroSub2}</span>
           </p>
-          <div className="mt-[34px] flex flex-wrap gap-[14px] items-center">
-            <a href="#reserve" className="inline-flex items-center gap-[10px] no-underline font-bold text-[15px] px-[26px] py-[15px] rounded-full text-white transition-all"
+          <div className="mt-[28px] md:mt-[34px] flex flex-wrap gap-[12px] md:gap-[14px] items-center">
+            <a href="#reserve" className="inline-flex items-center gap-[10px] no-underline font-bold text-[14px] md:text-[15px] px-[22px] md:px-[26px] py-[13px] md:py-[15px] rounded-full text-white transition-all"
               style={{ background:"var(--accent)", boxShadow:"0 6px 22px color-mix(in srgb,var(--accent) 22%,transparent)" }}>
               {t.ctaP} <span className="mono">→</span>
             </a>
-            <a href="#finder" className="inline-flex items-center gap-2 no-underline text-[var(--fg)] text-[15px] px-6 py-[15px] rounded-full border border-white/[.22] transition-all hover:border-white/50 hover:bg-white/[.05]">
+            <a href="#finder" className="inline-flex items-center gap-2 no-underline text-[var(--fg)] text-[14px] md:text-[15px] px-5 md:px-6 py-[13px] md:py-[15px] rounded-full border border-white/[.22] transition-all hover:border-white/50 hover:bg-white/[.05]">
               {t.ctaS}
             </a>
           </div>
-          <div className="mt-[30px]">
-            <span className="inline-flex items-center gap-2 mono text-[12px] tracking-[.08em] px-[14px] py-[7px] rounded-full"
+          <div className="mt-[24px] md:mt-[30px]">
+            <span className="inline-flex items-center gap-2 mono text-[11px] md:text-[12px] tracking-[.08em] px-[12px] md:px-[14px] py-[7px] rounded-full"
               style={{ color:"#9fe6bf", border:"1px solid rgba(54,224,138,.35)", background:"rgba(54,224,138,.08)" }}>
               <span className="w-[7px] h-[7px] rounded-full flex-shrink-0"
                 style={{ background:"#36e08a", boxShadow:"0 0 8px #36e08a", animation:"nkPulse 2.4s infinite" }} />
@@ -381,17 +438,17 @@ export function NeonKissaApp() {
 
       {/* ── TRUST STRIP ─────────────────────────────── */}
       <div className="border-b border-white/[.07] bg-white/[.015]">
-        <div className="max-w-[1240px] mx-auto px-8 py-[22px] flex flex-wrap items-center justify-between gap-5">
-          <div className="flex items-center gap-[14px]">
-            <span className="text-[18px] tracking-[2px]" style={{ color:"#ffc24b" }}>★★★★★</span>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 py-[18px] md:py-[22px] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-[12px] md:gap-[14px]">
+            <span className="text-[16px] md:text-[18px] tracking-[2px]" style={{ color:"#ffc24b" }}>★★★★★</span>
             <div>
-              <div className="font-bold text-[15px]">{t.rating}</div>
-              <div className="text-[12px]" style={{ color:"#8a7f78" }}>{t.reviews}</div>
+              <div className="font-bold text-[14px] md:text-[15px]">{t.rating}</div>
+              <div className="text-[11px] md:text-[12px]" style={{ color:"#8a7f78" }}>{t.reviews}</div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-[10px]">
+          <div className="flex flex-wrap gap-[8px] md:gap-[10px]">
             {t.badges.map(b => (
-              <span key={b} className="mono text-[11px] tracking-[.06em] px-[13px] py-[7px] rounded-[6px]"
+              <span key={b} className="mono text-[10px] md:text-[11px] tracking-[.06em] px-[11px] md:px-[13px] py-[6px] md:py-[7px] rounded-[6px]"
                 style={{ color:"var(--subtle)", border:"1px solid rgba(255,255,255,.12)" }}>{b}</span>
             ))}
           </div>
@@ -399,78 +456,77 @@ export function NeonKissaApp() {
       </div>
 
       {/* ── MENU ────────────────────────────────────── */}
-      <section id="menu" className="max-w-[1240px] mx-auto px-8 pt-[104px] pb-[40px]" style={{ scrollMarginTop:80 }}>
+      <section id="menu" className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[40px]" style={{ scrollMarginTop:68 }}>
         <SectionHead num="01" accent="accent" divider="normal" title={t.menuTitle} jp="献立" sub={t.menuSub} />
 
-        {/* Featured */}
-        <div className="grid border border-white/10 rounded-[18px] overflow-hidden mb-[30px] bg-white/[.02]"
-          style={{ gridTemplateColumns:".9fr 1.1fr" }}>
-          <div className="relative min-h-[300px] bg-cover bg-center overflow-hidden"
+        {/* Featured — stacks on mobile, side-by-side on md+ */}
+        <div className="grid grid-cols-1 md:grid-cols-[.9fr_1.1fr] border border-white/10 rounded-[18px] overflow-hidden mb-[24px] md:mb-[30px] bg-white/[.02]">
+          <div className="relative h-[200px] md:min-h-[300px] md:h-auto bg-cover bg-center overflow-hidden"
             style={{ backgroundImage:`linear-gradient(0deg,rgba(11,8,9,.5),rgba(11,8,9,.02)),url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=1400&auto=format&fit=crop')` }}>
-            <span className="absolute top-[18px] left-[18px] mono text-[11px] tracking-[.18em] text-white px-3 py-[7px] rounded-[6px]"
+            <span className="absolute top-[14px] left-[14px] md:top-[18px] md:left-[18px] mono text-[11px] tracking-[.18em] text-white px-3 py-[7px] rounded-[6px]"
               style={{ background:"color-mix(in srgb,var(--accent) 90%,transparent)" }}>{t.featLabel}</span>
           </div>
-          <div className="p-[38px_40px] flex flex-col justify-center">
+          <div className="p-[24px] md:p-[38px_40px] flex flex-col justify-center">
             <div className="flex items-center gap-3 flex-wrap">
               <span style={{ color:"var(--accent-text)" }}>{GlassSVG.coupe}</span>
-              <h3 className="m-0 font-black text-[30px]">Shinjuku Bloom</h3>
-              <span className="mono text-[14px]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
+              <h3 className="m-0 font-black text-[24px] md:text-[30px]">Shinjuku Bloom</h3>
+              <span className="mono text-[13px] md:text-[14px]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
             </div>
-            <p className="mt-[14px] text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
-            <div className="mt-[22px] flex items-center gap-[18px]">
-              <span className="mono text-[22px]" style={{ color:"var(--accent)" }}>¥1,600</span>
+            <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
+            <div className="mt-[18px] md:mt-[22px] flex items-center gap-[18px]">
+              <span className="mono text-[20px] md:text-[22px]" style={{ color:"var(--accent)" }}>¥1,600</span>
               <span className="text-[12px] italic" style={{ color:"#8a7f78" }}>{t.featNote}</span>
             </div>
           </div>
         </div>
 
-        {/* Menu grid */}
-        <div className="grid grid-cols-2 gap-[18px] max-md:grid-cols-1">
+        {/* Menu grid — already single column on mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] md:gap-[18px]">
           {MENU.filter(it => it.glass !== "coupe").map(item => {
             const d = lang === "jp" ? item.jp : item.en;
             return (
               <div key={item.glass}
-                className="flex justify-between items-start gap-4 p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
+                className="flex justify-between items-start gap-3 md:gap-4 p-[18px_20px] md:p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
                 style={{ borderColor:"rgba(255,255,255,.1)" }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 40%,transparent)")}
                 onMouseLeave={e => (e.currentTarget.style.borderColor="rgba(255,255,255,.1)")}>
-                <div className="flex gap-[14px] items-start">
+                <div className="flex gap-[12px] md:gap-[14px] items-start">
                   <span style={{ color:"var(--accent-text)" }}>{GlassSVG[item.glass]}</span>
                   <div>
-                    <div className="flex items-baseline gap-[10px] flex-wrap">
-                      <p className="m-0 font-bold text-[18px]">{d.name}</p>
-                      <span className="mono text-[12px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
+                    <div className="flex items-baseline gap-[8px] md:gap-[10px] flex-wrap">
+                      <p className="m-0 font-bold text-[16px] md:text-[18px]">{d.name}</p>
+                      <span className="mono text-[11px] md:text-[12px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
                     </div>
-                    <p className="mt-2 text-[14px] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+                    <p className="mt-[6px] md:mt-2 text-[13px] md:text-[14px] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
                   </div>
                 </div>
-                <p className="m-0 mono text-[16px] whitespace-nowrap" style={{ color:"var(--accent)" }}>{item.price}</p>
+                <p className="m-0 mono text-[15px] md:text-[16px] whitespace-nowrap" style={{ color:"var(--accent)" }}>{item.price}</p>
               </div>
             );
           })}
         </div>
-        <p className="mt-7 text-center text-[13px]" style={{ color:"#7a6f68" }}>{t.menuNote}</p>
+        <p className="mt-6 md:mt-7 text-center text-[12px] md:text-[13px]" style={{ color:"#7a6f68" }}>{t.menuNote}</p>
       </section>
 
       {/* ── FINDER ──────────────────────────────────── */}
-      <section id="finder" className="max-w-[1240px] mx-auto px-8 pt-[104px] pb-[104px]" style={{ scrollMarginTop:80 }}>
+      <section id="finder" className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px]" style={{ scrollMarginTop:68 }}>
         <SectionHead num="02" accent="accent2" divider="dual" title={t.finderTitle} jp="一杯を探す" sub={t.finderSub} />
-        <div className="grid grid-cols-2 gap-[22px] items-start max-md:grid-cols-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px] md:gap-[22px] items-start">
           {/* Controls */}
-          <div className="border border-white/10 rounded-[18px] p-[30px] bg-white/[.025]">
+          <div className="border border-white/10 rounded-[18px] p-[22px] md:p-[30px] bg-white/[.025]">
             <FilterGroup label={t.fMood} options={t.moodOpts} value={fMood} onChange={setFMood} />
             <FilterGroup label={t.fSweet} options={t.sweetOpts} value={fSweet} onChange={setFSweet} />
             <p className="m-0 mb-[10px] text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{t.fLikesLbl}</p>
-            <input className={inputCls} style={{ marginBottom:18 }} placeholder={t.fLikesPh} value={fLikes} onChange={e => setFLikes(e.target.value)} />
+            <input className={inputCls} style={{ marginBottom:16 }} placeholder={t.fLikesPh} value={fLikes} onChange={e => setFLikes(e.target.value)} />
             <p className="m-0 mb-2 text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{t.fAvoidLbl}</p>
             <input className={inputCls} placeholder={t.fAvoidPh} value={fAvoid} onChange={e => setFAvoid(e.target.value)} />
-            <p className="mt-[18px] text-[12px] leading-[1.5]" style={{ color:"#6f655e" }}>{t.finderTip}</p>
+            <p className="mt-[16px] md:mt-[18px] text-[12px] leading-[1.5]" style={{ color:"#6f655e" }}>{t.finderTip}</p>
           </div>
 
           {/* Best match */}
-          <div className="rounded-[18px] p-[30px]"
+          <div className="rounded-[18px] p-[22px] md:p-[30px]"
             style={{ border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)", background:"linear-gradient(180deg,color-mix(in srgb,var(--accent) 6%,transparent),rgba(255,255,255,.02))", boxShadow:"0 0 30px color-mix(in srgb,var(--accent) 8%,transparent) inset" }}>
-            <div className="flex items-center justify-between gap-3 mb-[18px]">
+            <div className="flex items-center justify-between gap-3 mb-[16px] md:mb-[18px]">
               <span className="mono text-[11px] tracking-[.2em] uppercase" style={{ color:"var(--accent-text)" }}>{t.bestLabel}</span>
               <span className="mono text-[16px]" style={{ color:"var(--accent)" }}>{bestMatch.price}</span>
             </div>
@@ -478,10 +534,10 @@ export function NeonKissaApp() {
               <span style={{ color:"var(--accent-text)", transform:"scale(1.25)", transformOrigin:"top left", flexShrink:0 }}>{GlassSVG[bestMatch.glass]}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-[10px] flex-wrap">
-                  <h3 className="m-0 font-extrabold text-[22px]">{(lang==="jp"?bestMatch.jp:bestMatch.en).name}</h3>
-                  <span className="mono text-[13px]" style={{ color:"#8a7f78" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).jp}</span>
+                  <h3 className="m-0 font-extrabold text-[20px] md:text-[22px]">{(lang==="jp"?bestMatch.jp:bestMatch.en).name}</h3>
+                  <span className="mono text-[12px] md:text-[13px]" style={{ color:"#8a7f78" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).jp}</span>
                 </div>
-                <p className="mt-2 text-[14px] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
+                <p className="mt-2 text-[13px] md:text-[14px] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
                 <p className="mt-2 text-[12px]" style={{ color:"#8a7f78" }}>
                   {(baseLabel[bestMatch.base]||{})[lang]||bestMatch.base} · {(sweetLabel[bestMatch.sweetness]||{})[lang]||bestMatch.sweetness}
                 </p>
@@ -494,7 +550,7 @@ export function NeonKissaApp() {
               </div>
             </div>
             <button onClick={askHanaAI} disabled={aiLoading}
-              className="mt-[22px] w-full inline-flex items-center justify-center gap-2 text-[14px] font-[inherit] px-[18px] py-3 rounded-[12px] cursor-pointer transition-all disabled:opacity-60"
+              className="mt-[20px] md:mt-[22px] w-full inline-flex items-center justify-center gap-2 text-[14px] font-[inherit] px-[18px] py-3 rounded-[12px] cursor-pointer transition-all disabled:opacity-60"
               style={{ border:"1px solid color-mix(in srgb,var(--accent2) 40%,transparent)", background:"color-mix(in srgb,var(--accent2) 12%,transparent)", color:"#d7b8ff" }}>
               <span>✦</span><span>{aiLoading ? (lang==="jp"?"確認中…":"Asking Hana…") : t.askAI}</span>
             </button>
@@ -513,32 +569,47 @@ export function NeonKissaApp() {
       </section>
 
       {/* ── ATMOSPHERE ──────────────────────────────── */}
-      <section id="atmosphere" className="max-w-[1240px] mx-auto px-8 pt-[104px] pb-[104px]" style={{ scrollMarginTop:80 }}>
+      <section id="atmosphere" className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px]" style={{ scrollMarginTop:68 }}>
         <SectionHead num="03" accent="accent2" divider="dual" title={t.atmosTitle} jp="雰囲気" sub={t.atmosSub} />
-        <div className="grid gap-3 max-md:grid-cols-2" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
-          <AtmosTile url="https://images.unsplash.com/photo-1525268323446-0505b6fe7778?fm=jpg&q=80&w=1600&auto=format&fit=crop" col="1/3" row="1/3" caption={t.atmosCap1} />
-          <AtmosTile url="https://images.unsplash.com/photo-1536935338788-846bb9981813?fm=jpg&q=80&w=800&auto=format&fit=crop" col="3" row="1" />
-          <AtmosTile url="https://images.unsplash.com/photo-1572116469696-31de0f17cc34?fm=jpg&q=80&w=800&auto=format&fit=crop" col="4" row="1/3" />
-          <AtmosTile url="https://images.unsplash.com/photo-1470337458703-46ad1756a187?fm=jpg&q=80&w=800&auto=format&fit=crop" col="3" row="2" />
-          <AtmosTile url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?fm=jpg&q=80&w=800&auto=format&fit=crop" col="1" row="3" />
-          <AtmosTile url="https://images.unsplash.com/photo-1546171753-97d7676e4602?fm=jpg&q=80&w=1200&auto=format&fit=crop" col="2/4" row="3" caption={t.atmosCap2} />
-          <AtmosTile url="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=800&auto=format&fit=crop" col="4" row="3" />
-        </div>
+
+        {isMobile ? (
+          /* Mobile: simple 2-col grid, no spanning */
+          <div className="grid grid-cols-2 gap-[10px]" style={{ gridAutoRows:"140px" }}>
+            <AtmosTile url="https://images.unsplash.com/photo-1525268323446-0505b6fe7778?fm=jpg&q=80&w=800&auto=format&fit=crop" caption={t.atmosCap1} />
+            <AtmosTile url="https://images.unsplash.com/photo-1536935338788-846bb9981813?fm=jpg&q=80&w=800&auto=format&fit=crop" />
+            <AtmosTile url="https://images.unsplash.com/photo-1572116469696-31de0f17cc34?fm=jpg&q=80&w=800&auto=format&fit=crop" />
+            <AtmosTile url="https://images.unsplash.com/photo-1470337458703-46ad1756a187?fm=jpg&q=80&w=800&auto=format&fit=crop" />
+            <AtmosTile url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?fm=jpg&q=80&w=800&auto=format&fit=crop" />
+            <AtmosTile url="https://images.unsplash.com/photo-1546171753-97d7676e4602?fm=jpg&q=80&w=800&auto=format&fit=crop" caption={t.atmosCap2} />
+          </div>
+        ) : (
+          /* Desktop: complex mosaic with col/row spanning */
+          <div className="grid gap-3" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
+            <AtmosTile url="https://images.unsplash.com/photo-1525268323446-0505b6fe7778?fm=jpg&q=80&w=1600&auto=format&fit=crop" col="1/3" row="1/3" caption={t.atmosCap1} />
+            <AtmosTile url="https://images.unsplash.com/photo-1536935338788-846bb9981813?fm=jpg&q=80&w=800&auto=format&fit=crop" col="3" row="1" />
+            <AtmosTile url="https://images.unsplash.com/photo-1572116469696-31de0f17cc34?fm=jpg&q=80&w=800&auto=format&fit=crop" col="4" row="1/3" />
+            <AtmosTile url="https://images.unsplash.com/photo-1470337458703-46ad1756a187?fm=jpg&q=80&w=800&auto=format&fit=crop" col="3" row="2" />
+            <AtmosTile url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?fm=jpg&q=80&w=800&auto=format&fit=crop" col="1" row="3" />
+            <AtmosTile url="https://images.unsplash.com/photo-1546171753-97d7676e4602?fm=jpg&q=80&w=1200&auto=format&fit=crop" col="2/4" row="3" caption={t.atmosCap2} />
+            <AtmosTile url="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=800&auto=format&fit=crop" col="4" row="3" />
+          </div>
+        )}
       </section>
 
       {/* ── RESERVE ─────────────────────────────────── */}
-      <section id="reserve" className="border-t border-b border-white/[.07] bg-white/[.015]" style={{ scrollMarginTop:80 }}>
-        <div className="max-w-[1240px] mx-auto px-8 pt-[104px] pb-[104px]">
+      <section id="reserve" className="border-t border-b border-white/[.07] bg-white/[.015]" style={{ scrollMarginTop:68 }}>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px]">
           <SectionHead num="04" accent="green" divider="green" title={t.reserveTitle} jp="予約" sub={t.reserveSub} />
-          <div className="grid gap-[22px] items-start max-md:grid-cols-1" style={{ gridTemplateColumns:"1.25fr .85fr" }}>
-            <div className="border border-white/[.12] rounded-[18px] p-8 bg-[rgba(11,8,9,.5)]">
+          {/* Grid: single column on mobile, 1.25fr/0.85fr on desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-[1.25fr_.85fr] gap-[18px] md:gap-[22px] items-start">
+            <div className="border border-white/[.12] rounded-[18px] p-[22px] md:p-8 bg-[rgba(11,8,9,.5)]">
               {!formSent ? (
                 <form onSubmit={e => { e.preventDefault(); setFormSent(true); }} className="flex flex-col gap-4">
-                  <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fName}<input required className={inputCls} /></label>
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fEmail}<input required type="email" className={inputCls} /></label>
                   </div>
-                  <div className="grid gap-4 max-md:grid-cols-1" style={{ gridTemplateColumns:"1fr 1fr 1fr" }}>
+                  <div className="grid grid-cols-3 gap-4">
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fDate}<input type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fTime}<input type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fGuests}<input type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
@@ -559,10 +630,10 @@ export function NeonKissaApp() {
                 </div>
               )}
             </div>
-            <div className="border border-white/10 rounded-[18px] p-[30px] bg-white/[.02]">
-              <div className="mono text-[11px] tracking-[.2em] uppercase mb-[18px]" style={{ color:"var(--accent-text)" }}>{t.planLabel}</div>
+            <div className="border border-white/10 rounded-[18px] p-[22px] md:p-[30px] bg-white/[.02]">
+              <div className="mono text-[11px] tracking-[.2em] uppercase mb-[16px] md:mb-[18px]" style={{ color:"var(--accent-text)" }}>{t.planLabel}</div>
               {t.planRows.map(r => (
-                <div key={r.k} className="flex justify-between gap-[14px] py-[13px] border-b border-white/[.07]">
+                <div key={r.k} className="flex justify-between gap-[14px] py-[12px] md:py-[13px] border-b border-white/[.07]">
                   <span className="text-[13px]" style={{ color:"#8a7f78" }}>{r.k}</span>
                   <span className="text-[13px] text-right" style={{ color:"#e6ddd6" }}>{r.v}</span>
                 </div>
@@ -577,14 +648,14 @@ export function NeonKissaApp() {
       </section>
 
       {/* ── ACCESS ──────────────────────────────────── */}
-      <section id="access" className="max-w-[1240px] mx-auto px-8 pt-[90px] pb-[60px]" style={{ scrollMarginTop:80 }}>
-        <div className="grid grid-cols-2 gap-[48px] items-center max-md:grid-cols-1">
+      <section id="access" className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[90px] pb-[48px] md:pb-[60px]" style={{ scrollMarginTop:68 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[32px] md:gap-[48px] items-center">
           <div>
             <div className="w-16 h-px mb-4" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
-            <h2 className="m-0 font-black mb-[22px]" style={{ fontSize:"clamp(28px,3vw,40px)" }}>
+            <h2 className="m-0 font-black mb-[18px] md:mb-[22px]" style={{ fontSize:"clamp(26px,3vw,40px)" }}>
               {t.accessTitle} <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>道案内</span>
             </h2>
-            <div className="flex flex-col gap-4 text-[15px]">
+            <div className="flex flex-col gap-[14px] md:gap-4 text-[14px] md:text-[15px]">
               <div>
                 <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.addrLabel}</div>
                 <div>{t.addr}</div>
@@ -593,7 +664,7 @@ export function NeonKissaApp() {
                 <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.hoursLabel}</div>
                 <div>{t.hours}</div>
               </div>
-              <div className="flex gap-[40px]">
+              <div className="flex gap-[32px] md:gap-[40px]">
                 <div>
                   <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.phoneLabel}</div>
                   <div>+81 3-5362-XXXX</div>
@@ -605,7 +676,7 @@ export function NeonKissaApp() {
               </div>
             </div>
           </div>
-          <div className="h-[300px] rounded-[16px] overflow-hidden flex items-center justify-center"
+          <div className="h-[220px] md:h-[300px] rounded-[16px] overflow-hidden flex items-center justify-center"
             style={{ border:"1px dashed rgba(255,255,255,.18)", background:"repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 12px,transparent 12px 24px)" }}>
             <span className="mono text-[12px] tracking-[.16em]" style={{ color:"#6f655e" }}>[ google maps embed ]</span>
           </div>
@@ -613,7 +684,7 @@ export function NeonKissaApp() {
       </section>
 
       <footer className="border-t border-white/[.08]">
-        <div className="max-w-[1240px] mx-auto px-8 py-[30px] flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 py-[24px] md:py-[30px] flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-[10px]">
             <span className="w-2 h-2 rounded-full" style={{ background:"var(--accent)", boxShadow:"0 0 10px var(--accent)" }} />
             <span className="mono font-bold tracking-[.28em] text-[13px]">NEON KISSA</span>
@@ -623,17 +694,27 @@ export function NeonKissaApp() {
       </footer>
 
       {/* ── CHATBOT ─────────────────────────────────── */}
-      <div className="fixed right-[22px] bottom-[22px] z-[80] flex flex-col items-end gap-[14px]">
+      <div className="fixed right-[14px] md:right-[22px] bottom-[14px] md:bottom-[22px] z-[80] flex flex-col items-end gap-[12px] md:gap-[14px]">
         {chatOpen && (
-          <div className="w-[368px] max-w-[calc(100vw-44px)] flex flex-col rounded-[20px] overflow-hidden"
-            style={{ height:"540px", maxHeight:"calc(100vh - 130px)", background:"rgba(16,11,13,.97)", backdropFilter:"blur(16px)", border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)", boxShadow:"0 24px 70px rgba(0,0,0,.65),0 0 44px color-mix(in srgb,var(--accent) 16%,transparent)", animation:"nkPop .28s ease both" }}>
-            <div className="flex items-center gap-3 p-[16px_18px] border-b border-white/[.08]"
+          <div
+            className="flex flex-col rounded-[18px] md:rounded-[20px] overflow-hidden"
+            style={{
+              width: isMobile ? "calc(100vw - 28px)" : "368px",
+              height: isMobile ? "calc(100vh - 120px)" : "540px",
+              maxHeight: "calc(100vh - 120px)",
+              background:"rgba(16,11,13,.97)", backdropFilter:"blur(16px)",
+              border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)",
+              boxShadow:"0 24px 70px rgba(0,0,0,.65),0 0 44px color-mix(in srgb,var(--accent) 16%,transparent)",
+              animation:"nkPop .28s ease both"
+            }}>
+            {/* Chat header */}
+            <div className="flex items-center gap-3 p-[14px_16px] md:p-[16px_18px] border-b border-white/[.08]"
               style={{ background:"color-mix(in srgb,var(--accent) 6%,transparent)" }}>
-              <div className="w-[40px] h-[40px] rounded-full flex-shrink-0 flex items-center justify-center text-[19px] text-white"
+              <div className="w-[38px] h-[38px] md:w-[40px] md:h-[40px] rounded-full flex-shrink-0 flex items-center justify-center text-[17px] md:text-[19px] text-white"
                 style={{ background:"radial-gradient(circle at 35% 30%,var(--accent-text),var(--accent))", boxShadow:"0 0 16px color-mix(in srgb,var(--accent) 55%,transparent)" }}>花</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-[7px]">
-                  <span className="font-bold text-[15px]">{t.hanaName}</span>
+                  <span className="font-bold text-[14px] md:text-[15px]">{t.hanaName}</span>
                   <span className="w-[7px] h-[7px] rounded-full" style={{ background:"#36e08a", boxShadow:"0 0 7px #36e08a", animation:"nkPulse 2.4s infinite" }} />
                 </div>
                 <div className="text-[11px]" style={{ color:"#8a7f78" }}>{t.hanaRole}</div>
@@ -641,10 +722,11 @@ export function NeonKissaApp() {
               <button onClick={() => setChatOpen(false)} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer" style={{ color:"#8a7f78" }}>✕</button>
             </div>
 
-            <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-[18px] flex flex-col gap-[11px]">
+            {/* Messages */}
+            <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-[14px] md:p-[18px] flex flex-col gap-[10px] md:gap-[11px]">
               {chatMsgs.map((m, i) => (
                 <div key={i} className={`flex ${m.role==="user"?"justify-end":"justify-start"}`}>
-                  <div className="max-w-[82%] px-[13px] py-[10px] rounded-[14px] text-[14px] leading-[1.5] whitespace-pre-wrap"
+                  <div className="max-w-[85%] px-[12px] py-[9px] rounded-[13px] text-[14px] leading-[1.5] whitespace-pre-wrap"
                     style={ m.role==="user"
                       ? { background:"color-mix(in srgb,var(--accent) 20%,transparent)", color:"var(--fg)", border:"1px solid color-mix(in srgb,var(--accent) 35%,transparent)" }
                       : { background:"rgba(255,255,255,.06)", color:"var(--fg)", border:"1px solid rgba(255,255,255,.1)" }}>
@@ -661,8 +743,9 @@ export function NeonKissaApp() {
               )}
             </div>
 
+            {/* Suggestion chips */}
             {showSugg && chatMsgs.length <= 1 && (
-              <div className="flex flex-wrap gap-[7px] px-[18px] pb-3">
+              <div className="flex flex-wrap gap-[7px] px-[14px] md:px-[18px] pb-3">
                 {t.chatSugg.map(s => (
                   <button key={s} onClick={() => sendChat(s)}
                     className="text-[12px] px-3 py-[7px] rounded-full font-[inherit] cursor-pointer transition-all"
@@ -673,7 +756,8 @@ export function NeonKissaApp() {
               </div>
             )}
 
-            <div className="flex gap-2 p-[14px_16px] border-t border-white/[.08]">
+            {/* Input row */}
+            <div className="flex gap-2 p-[12px_14px] md:p-[14px_16px] border-t border-white/[.08]">
               <input className="flex-1 bg-black/40 border border-white/10 rounded-[12px] px-[14px] py-[11px] text-white text-[14px] font-[inherit] outline-none"
                 value={chatInput} onChange={e => setChatInput(e.target.value)}
                 onKeyDown={e => e.key==="Enter" && sendChat(chatInput)}
@@ -684,10 +768,12 @@ export function NeonKissaApp() {
             </div>
           </div>
         )}
+
+        {/* Launcher button */}
         <button onClick={openChat}
-          className="inline-flex items-center gap-[10px] border-none text-white font-[inherit] font-bold text-[14px] px-5 py-[13px] rounded-full cursor-pointer"
+          className="inline-flex items-center gap-[8px] md:gap-[10px] border-none text-white font-[inherit] font-bold text-[13px] md:text-[14px] px-[16px] md:px-5 py-[11px] md:py-[13px] rounded-full cursor-pointer"
           style={{ background:"linear-gradient(135deg,var(--accent),var(--accent2))", boxShadow:"0 8px 30px color-mix(in srgb,var(--accent) 40%,transparent)" }}>
-          <span className="w-[30px] h-[30px] rounded-full bg-white/20 flex items-center justify-center text-[15px]">花</span>
+          <span className="w-[28px] h-[28px] md:w-[30px] md:h-[30px] rounded-full bg-white/20 flex items-center justify-center text-[14px] md:text-[15px]">花</span>
           {t.chatLauncher}
         </button>
       </div>
@@ -708,14 +794,14 @@ function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; acc
     green: "linear-gradient(90deg,#36e08a,#0ad,transparent)",
   }[divider];
   return (
-    <div className="flex items-start gap-7 mb-11">
-      <span className="mono text-[52px] leading-none font-bold flex-shrink-0" style={{ color:"transparent", WebkitTextStroke:`1px ${strokeColor}` }}>{num}</span>
+    <div className="flex items-start gap-4 md:gap-7 mb-8 md:mb-11">
+      <span className="mono text-[36px] md:text-[52px] leading-none font-bold flex-shrink-0" style={{ color:"transparent", WebkitTextStroke:`1px ${strokeColor}` }}>{num}</span>
       <div>
-        <div className="w-16 h-px mb-[14px]" style={{ background:dividerBg }} />
-        <h2 className="m-0 font-black leading-[1.04]" style={{ fontSize:"clamp(30px,3.4vw,44px)" }}>
+        <div className="w-12 md:w-16 h-px mb-[12px] md:mb-[14px]" style={{ background:dividerBg }} />
+        <h2 className="m-0 font-black leading-[1.04]" style={{ fontSize:"clamp(24px,3.4vw,44px)" }}>
           {title} <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>{jp}</span>
         </h2>
-        <p className="mt-[10px] text-[15px]" style={{ color:"var(--muted)", maxWidth:"52ch" }}>{sub}</p>
+        <p className="mt-[8px] md:mt-[10px] text-[14px] md:text-[15px]" style={{ color:"var(--muted)", maxWidth:"52ch" }}>{sub}</p>
       </div>
     </div>
   );
@@ -725,10 +811,10 @@ function FilterGroup({ label, options, value, onChange }: { label:string; option
   return (
     <>
       <p className="m-0 mb-[10px] text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{label}</p>
-      <div className="flex flex-wrap gap-[9px] mb-[22px]">
+      <div className="flex flex-wrap gap-[8px] md:gap-[9px] mb-[18px] md:mb-[22px]">
         {options.map(o => (
           <button key={o.v} onClick={() => onChange(o.v)}
-            className="border rounded-full px-[15px] py-2 text-[13px] font-[inherit] cursor-pointer transition-all"
+            className="border rounded-full px-[13px] md:px-[15px] py-[8px] md:py-2 text-[13px] font-[inherit] cursor-pointer transition-all"
             style={ value===o.v
               ? { borderColor:"color-mix(in srgb,var(--accent) 60%,transparent)", background:"color-mix(in srgb,var(--accent) 12%,transparent)", color:"var(--accent-text)" }
               : { borderColor:"rgba(255,255,255,.14)", background:"none", color:"var(--subtle)" }}>
@@ -740,15 +826,15 @@ function FilterGroup({ label, options, value, onChange }: { label:string; option
   );
 }
 
-function AtmosTile({ url, col, row, caption }: { url:string; col:string; row:string; caption?:string }) {
+function AtmosTile({ url, col, row, caption }: { url:string; col?:string; row?:string; caption?:string }) {
   return (
-    <div className="relative rounded-[14px] overflow-hidden border border-white/[.08]"
+    <div className="relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08]"
       style={{ gridColumn:col, gridRow:row }}>
       <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
         style={{ backgroundImage:`url('${url}')`, transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }}
         onMouseEnter={e => (e.currentTarget.style.transform="scale(1.06)")}
         onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")} />
-      {caption && <p className="absolute left-[18px] bottom-[15px] m-0 font-bold text-[16px] pointer-events-none" style={{ textShadow:"0 1px 12px rgba(0,0,0,.6)" }}>{caption}</p>}
+      {caption && <p className="absolute left-[12px] md:left-[18px] bottom-[12px] md:bottom-[15px] m-0 font-bold text-[14px] md:text-[16px] pointer-events-none" style={{ textShadow:"0 1px 12px rgba(0,0,0,.6)" }}>{caption}</p>}
     </div>
   );
 }
