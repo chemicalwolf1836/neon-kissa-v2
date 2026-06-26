@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback, type ReactElement } from "react";
 
+/* ── CONFIG ──────────────────────────────────────────── */
+// Sign up free at formspree.io and replace with your actual form ID
+const FORMSPREE_ID = "YOUR_FORM_ID";
+
 /* ── TYPES ───────────────────────────────────────────── */
 type Lang = "en" | "jp";
 type Palette = "ruby" | "cyber" | "amber" | "jade";
@@ -18,6 +22,23 @@ interface MenuItem {
   jp: { name: string; jp: string; desc: string };
 }
 interface ChatMsg { role: "user" | "bot"; text: string }
+
+/* ── SCROLL REVEAL HOOK ──────────────────────────────── */
+function useReveal(threshold = 0.12) {
+  const ref = useRef<HTMLElement | null>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, visible };
+}
 
 /* ── GLASS SVGs ──────────────────────────────────────── */
 const GlassSVG: Record<Glass, ReactElement> = {
@@ -69,6 +90,31 @@ const HERO_IMGS = [
   "https://images.unsplash.com/photo-1758881606455-26cc1c2c8de4?fm=jpg&q=80&w=2400&auto=format&fit=crop",
 ];
 
+/* ── PHOTO HELPER ────────────────────────────────────── */
+const usp = (id: string, w: number) =>
+  `https://images.unsplash.com/${id}?fm=jpg&q=80&w=${w}&auto=format&fit=crop`;
+
+/* ── ATMOSPHERE SETS (3 rotating daily, 7 tiles each) ── */
+const ATMOS_PHOTO_IDS = [
+  /* Set 0 — dark ambient */
+  ["photo-1525268323446-0505b6fe7778","photo-1536935338788-846bb9981813","photo-1572116469696-31de0f17cc34","photo-1470337458703-46ad1756a187","photo-1543007630-9710e4a00a20","photo-1546171753-97d7676e4602","photo-1514362545857-3bc16c4c7d1b"],
+  /* Set 1 — warm cocktail glow */
+  ["photo-1551024709-8f23befc8f86","photo-1535958636474-b021ee887b13","photo-1507133750040-4a8f57021571","photo-1574870111867-089730e5a72b","photo-1560512823-829485b8bf24","photo-1758881606455-26cc1c2c8de4","photo-1551024601-bec78aea704b"],
+  /* Set 2 — neon cyberpunk */
+  ["photo-1546171753-97d7676e4602","photo-1579656592043-a20e25a4aa4b","photo-1525268323446-0505b6fe7778","photo-1477763858572-cda7deaa9bc5","photo-1572116469696-31de0f17cc34","photo-1543007630-9710e4a00a20","photo-1506377247377-2a5b3b417ebb"],
+] as const;
+
+/* ── FEATURED COCKTAIL IMAGES (7, one per day-of-week) ─ */
+const FEAT_IMG_IDS = [
+  "photo-1514362545857-3bc16c4c7d1b",
+  "photo-1551024601-bec78aea704b",
+  "photo-1574870111867-089730e5a72b",
+  "photo-1507133750040-4a8f57021571",
+  "photo-1551024709-8f23befc8f86",
+  "photo-1560512823-829485b8bf24",
+  "photo-1535958636474-b021ee887b13",
+];
+
 /* ── CONTENT ─────────────────────────────────────────── */
 const T = {
   en: {
@@ -89,7 +135,7 @@ const T = {
     finderTitle:"Find Your Cocktail", finderSub:"Tell us the mood — our bartender will point you to the right glass.",
     fMood:"MOOD", fSweet:"SWEETNESS", fLikesLbl:"FLAVOURS YOU LIKE", fLikesPh:"citrus, floral",
     fAvoidLbl:"ANYTHING TO AVOID", fAvoidPh:"bitter, smoky",
-    bestLabel:"Best match", askAI:"Ask Hana AI", aiPickLabel:"✦ Hana's pick",
+    bestLabel:"Best match", rankLabel:"Also consider", askAI:"Ask Hana AI", aiPickLabel:"✦ Hana's pick",
     finderTip:"Your best match updates live as you choose. Tap Ask Hana AI for a personal suggestion.",
     moodOpts:[{v:"after-work",l:"After-work"},{v:"chill",l:"Chill"},{v:"romantic",l:"Romantic"},{v:"party",l:"Party"}] as {v:string;l:string}[],
     sweetOpts:[{v:"any",l:"Any"},{v:"dry",l:"Dry"},{v:"balanced",l:"Balanced"},{v:"sweet",l:"Sweet"}] as {v:string;l:string}[],
@@ -97,13 +143,15 @@ const T = {
     atmosCap1:"The counter", atmosCap2:"Off Kabukicho",
     reserveTitle:"Reservations", reserveSub:"A quick request — we confirm by email within 24 hours.",
     fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
-    fMsg:"Message (optional)", fSend:"Send request", fHint:"We'll reply by email within 24 hours. Walk-ins also welcome.",
+    fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We'll reply by email within 24 hours. Walk-ins also welcome.",
+    fError:"Submission failed. Please try again.",
     sentTitle:"Request received", sentMsg:"We'll confirm your booking by email within 24 hours. See you soon.",
     again:"Make another request", planLabel:"PLAN YOUR NIGHT",
     planRows:[{k:"Hours",v:"Daily 18:00–03:00"},{k:"Last entry",v:"02:00"},{k:"Walk-ins",v:"Always welcome"},{k:"Cover charge",v:"None"},{k:"Payment",v:"Cash & card"}],
     askHost:"Ask Hana about your visit",
     accessTitle:"Find Us", addrLabel:"ADDRESS", addr:"2-2-1 Kabukicho, Shinjuku-ku, Tokyo",
     hoursLabel:"HOURS", hours:"Daily 18:00–03:00 · Last entry 02:00", phoneLabel:"PHONE",
+    mapsBtn:"Open in Google Maps",
     footer:"© 2024 Neon Kissa · Shinjuku, Tokyo",
     hanaName:"Hana", hanaRole:"Virtual host at Neon Kissa",
     chatLauncher:"Chat with Hana", chatPh:"Ask about cocktails, hours, or reservations…",
@@ -128,7 +176,7 @@ const T = {
     finderTitle:"カクテルを探す", finderSub:"気分を教えてください。バーテンダーが最適なグラスをご案内します。",
     fMood:"気分", fSweet:"甘さ", fLikesLbl:"好きなフレーバー", fLikesPh:"柑橘、フローラル",
     fAvoidLbl:"避けたいもの", fAvoidPh:"苦味、スモーキー",
-    bestLabel:"おすすめ", askAI:"花AIに聞く", aiPickLabel:"✦ 花のおすすめ",
+    bestLabel:"おすすめ", rankLabel:"他にはこちら", askAI:"花AIに聞く", aiPickLabel:"✦ 花のおすすめ",
     finderTip:"リアルタイムで更新されます。花AIにパーソナル提案を聞いてみましょう。",
     moodOpts:[{v:"after-work",l:"仕事帰り"},{v:"chill",l:"リラックス"},{v:"romantic",l:"デート"},{v:"party",l:"盛り上がり"}] as {v:string;l:string}[],
     sweetOpts:[{v:"any",l:"指定なし"},{v:"dry",l:"ドライ"},{v:"balanced",l:"バランス"},{v:"sweet",l:"甘め"}] as {v:string;l:string}[],
@@ -136,13 +184,15 @@ const T = {
     atmosCap1:"カウンター", atmosCap2:"歌舞伎町近く",
     reserveTitle:"予約", reserveSub:"簡単なリクエスト — 24時間以内にメールで確認します。",
     fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
-    fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fHint:"24時間以内にメールにてご返信いたします。",
+    fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fSending:"送信中…", fHint:"24時間以内にメールにてご返信いたします。",
+    fError:"送信に失敗しました。再度お試しください。",
     sentTitle:"リクエスト受付完了", sentMsg:"24時間以内にご予約確認メールをお送りします。近いうちにお会いしましょう。",
     again:"別のリクエストをする", planLabel:"ご来店の計画",
     planRows:[{k:"営業時間",v:"毎日18:00〜03:00"},{k:"最終入場",v:"02:00"},{k:"ウォークイン",v:"いつでも歓迎"},{k:"カバーチャージ",v:"なし"},{k:"お支払い",v:"現金・カード"}],
     askHost:"花にご相談ください",
     accessTitle:"アクセス", addrLabel:"住所", addr:"東京都新宿区歌舞伎町2-2-1",
     hoursLabel:"営業時間", hours:"毎日18:00〜03:00・最終入場02:00", phoneLabel:"電話",
+    mapsBtn:"Googleマップで開く",
     footer:"© 2024 ネオン喫茶・東京都新宿区",
     hanaName:"花", hanaRole:"ネオン喫茶のバーチャルホスト",
     chatLauncher:"花に話しかける", chatPh:"カクテル・営業時間・予約についてお尋ねください…",
@@ -207,21 +257,38 @@ export function NeonKissaApp() {
   const [aiRec, setAiRec] = useState<{ name: string; reason: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [formSent, setFormSent] = useState(false);
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMsgs, setChatMsgs] = useState<ChatMsg[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [showSugg, setShowSugg] = useState(true);
   const [heroUrl, setHeroUrl] = useState("");
+  const [atmosSetIdx, setAtmosSetIdx] = useState(0);
+  const [featImg, setFeatImg] = useState("");
   const [navOpen, setNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("");
   const chatBodyRef = useRef<HTMLDivElement>(null);
+
+  /* Scroll-reveal refs */
+  const menuReveal    = useReveal();
+  const finderReveal  = useReveal();
+  const atmosReveal   = useReveal();
+  const reserveReveal = useReveal();
+  const accessReveal  = useReveal();
+
   const t = T[lang];
 
   useEffect(() => {
     try { const s = localStorage.getItem("nk-lang"); if (s === "en" || s === "jp") setLang(s as Lang); } catch {}
     try { const p = localStorage.getItem("nk-pal"); if (["ruby","cyber","amber","jade"].includes(p!)) setPalette(p as Palette); } catch {}
-    setHeroUrl(HERO_IMGS[new Date().getDay() % HERO_IMGS.length]);
+    const today = new Date().getDay();
+    setHeroUrl(HERO_IMGS[today % HERO_IMGS.length]);
+    setAtmosSetIdx(today % ATMOS_PHOTO_IDS.length);
+    setFeatImg(FEAT_IMG_IDS[today % FEAT_IMG_IDS.length]);
   }, []);
 
   useEffect(() => {
@@ -252,8 +319,30 @@ export function NeonKissaApp() {
     return () => document.removeEventListener("click", close);
   }, [navOpen]);
 
-  const bestMatch = MENU.map(it => ({ it, score: scoreItem(it, fMood, fSweet, fLikes, fAvoid) }))
-    .sort((a, b) => b.score - a.score)[0].it;
+  /* Scroll-to-top visibility */
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 500);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* Active nav scroll-spy */
+  useEffect(() => {
+    const ids = ["top","menu","finder","atmosphere","reserve","access"];
+    const sections = ids.map(id => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.id); }),
+      { rootMargin: "-20% 0px -60% 0px" }
+    );
+    sections.forEach(s => obs.observe(s));
+    return () => obs.disconnect();
+  }, []);
+
+  /* Derived: full ranked list, best match stays as before for Hana AI */
+  const rankedMatches = MENU
+    .map(it => ({ it, score: scoreItem(it, fMood, fSweet, fLikes, fAvoid) }))
+    .sort((a, b) => b.score - a.score);
+  const bestMatch = rankedMatches[0].it;
 
   const askHanaAI = useCallback(() => {
     setAiLoading(true);
@@ -289,6 +378,29 @@ export function NeonKissaApp() {
     }
   }, [chatMsgs.length, t.chatWelcome]);
 
+  const handleFormSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    setFormError(null);
+    const data = new FormData(e.currentTarget);
+    try {
+      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+        method: "POST",
+        body: data,
+        headers: { Accept: "application/json" },
+      });
+      if (res.ok) {
+        setFormSent(true);
+      } else {
+        setFormError(t.fError);
+      }
+    } catch {
+      setFormError(t.fError);
+    } finally {
+      setFormSubmitting(false);
+    }
+  }, [t.fError]);
+
   const baseLabel: Record<string, Record<Lang, string>> = {
     whiskey:{en:"Whiskey",jp:"ウイスキー"}, gin:{en:"Gin",jp:"ジン"}, vodka:{en:"Vodka",jp:"ウォッカ"}, umeshu:{en:"Umeshu",jp:"梅酒"},
   };
@@ -306,6 +418,10 @@ export function NeonKissaApp() {
   const inputCls = "w-full bg-black/35 border border-white/10 rounded-[10px] px-[13px] py-[11px] text-white text-sm font-[inherit] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]";
   const NAV_LINKS = ["#menu","#finder","#atmosphere","#reserve","#access"] as const;
   const NAV_KEYS  = ["navMenu","navFinder","navAtmos","navReserve","navAccess"] as const;
+  const NAV_IDS   = ["menu","finder","atmosphere","reserve","access"] as const;
+
+  /* Current atmosphere tile IDs (updates once per day on mount) */
+  const atmos = ATMOS_PHOTO_IDS[atmosSetIdx];
 
   /* ── RENDER ──────────────────────────────────────── */
   return (
@@ -327,12 +443,22 @@ export function NeonKissaApp() {
             <span className="hidden sm:inline text-[12px] tracking-[.12em]" style={{ color:"#8a7f78" }}>ネオン喫茶</span>
           </a>
 
-          {/* Desktop nav */}
+          {/* Desktop nav — with active scroll-spy highlight */}
           <nav className="hidden md:flex items-center gap-[30px] text-[13px] tracking-[.05em]">
-            {NAV_KEYS.map((k, i) => (
-              <a key={k} href={NAV_LINKS[i]}
-                className="text-[var(--subtle)] no-underline hover:text-white transition-colors">{t[k]}</a>
-            ))}
+            {NAV_KEYS.map((k, i) => {
+              const isActive = activeSection === NAV_IDS[i];
+              return (
+                <a key={k} href={NAV_LINKS[i]}
+                  className="relative no-underline transition-colors pb-[3px]"
+                  style={{ color: isActive ? "var(--accent-text)" : "var(--subtle)" }}>
+                  {t[k]}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
+                      style={{ background:"var(--accent)", boxShadow:"0 0 6px var(--accent)" }} />
+                  )}
+                </a>
+              );
+            })}
           </nav>
 
           {/* Right controls */}
@@ -377,14 +503,17 @@ export function NeonKissaApp() {
         {navOpen && (
           <nav className="md:hidden border-t border-white/[.08] bg-[rgba(11,8,9,.96)]"
             onClick={e => e.stopPropagation()}>
-            {NAV_KEYS.map((k, i) => (
-              <a key={k} href={NAV_LINKS[i]} onClick={() => setNavOpen(false)}
-                className="flex items-center px-5 py-[15px] text-[15px] tracking-[.03em] no-underline border-b border-white/[.06] transition-colors hover:bg-white/[.04]"
-                style={{ color:"var(--subtle)" }}>
-                <span className="flex-1">{t[k]}</span>
-                <span className="mono text-[11px]" style={{ color:"var(--accent-text)" }}>→</span>
-              </a>
-            ))}
+            {NAV_KEYS.map((k, i) => {
+              const isActive = activeSection === NAV_IDS[i];
+              return (
+                <a key={k} href={NAV_LINKS[i]} onClick={() => setNavOpen(false)}
+                  className="flex items-center px-5 py-[15px] text-[15px] tracking-[.03em] no-underline border-b border-white/[.06] transition-colors hover:bg-white/[.04]"
+                  style={{ color: isActive ? "var(--accent-text)" : "var(--subtle)" }}>
+                  <span className="flex-1">{t[k]}</span>
+                  <span className="mono text-[11px]" style={{ color:"var(--accent-text)" }}>→</span>
+                </a>
+              );
+            })}
             <div className="px-5 py-4">
               <a href="#reserve" onClick={() => setNavOpen(false)}
                 className="block w-full text-center mono text-[13px] tracking-[.1em] no-underline px-4 py-[12px] rounded-full"
@@ -456,13 +585,16 @@ export function NeonKissaApp() {
       </div>
 
       {/* ── MENU ────────────────────────────────────── */}
-      <section id="menu" className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[40px]" style={{ scrollMarginTop:68 }}>
+      <section id="menu"
+        ref={menuReveal.ref as React.RefObject<HTMLElement>}
+        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[40px] nk-reveal${menuReveal.visible?" is-visible":""}`}
+        style={{ scrollMarginTop:68 }}>
         <SectionHead num="01" accent="accent" divider="normal" title={t.menuTitle} jp="献立" sub={t.menuSub} />
 
         {/* Featured — stacks on mobile, side-by-side on md+ */}
         <div className="grid grid-cols-1 md:grid-cols-[.9fr_1.1fr] border border-white/10 rounded-[18px] overflow-hidden mb-[24px] md:mb-[30px] bg-white/[.02]">
           <div className="relative h-[200px] md:min-h-[300px] md:h-auto bg-cover bg-center overflow-hidden"
-            style={{ backgroundImage:`linear-gradient(0deg,rgba(11,8,9,.5),rgba(11,8,9,.02)),url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=1400&auto=format&fit=crop')` }}>
+            style={{ backgroundImage:`linear-gradient(0deg,rgba(11,8,9,.5),rgba(11,8,9,.02)),url('${usp(featImg || "photo-1514362545857-3bc16c4c7d1b", 1400)}')` }}>
             <span className="absolute top-[14px] left-[14px] md:top-[18px] md:left-[18px] mono text-[11px] tracking-[.18em] text-white px-3 py-[7px] rounded-[6px]"
               style={{ background:"color-mix(in srgb,var(--accent) 90%,transparent)" }}>{t.featLabel}</span>
           </div>
@@ -480,7 +612,7 @@ export function NeonKissaApp() {
           </div>
         </div>
 
-        {/* Menu grid — already single column on mobile */}
+        {/* Menu grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] md:gap-[18px]">
           {MENU.filter(it => it.glass !== "coupe").map(item => {
             const d = lang === "jp" ? item.jp : item.en;
@@ -509,7 +641,10 @@ export function NeonKissaApp() {
       </section>
 
       {/* ── FINDER ──────────────────────────────────── */}
-      <section id="finder" className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px]" style={{ scrollMarginTop:68 }}>
+      <section id="finder"
+        ref={finderReveal.ref as React.RefObject<HTMLElement>}
+        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px] nk-reveal${finderReveal.visible?" is-visible":""}`}
+        style={{ scrollMarginTop:68 }}>
         <SectionHead num="02" accent="accent2" divider="dual" title={t.finderTitle} jp="一杯を探す" sub={t.finderSub} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px] md:gap-[22px] items-start">
           {/* Controls */}
@@ -523,7 +658,7 @@ export function NeonKissaApp() {
             <p className="mt-[16px] md:mt-[18px] text-[12px] leading-[1.5]" style={{ color:"#6f655e" }}>{t.finderTip}</p>
           </div>
 
-          {/* Best match */}
+          {/* Best match + ranked list */}
           <div className="rounded-[18px] p-[22px] md:p-[30px]"
             style={{ border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)", background:"linear-gradient(180deg,color-mix(in srgb,var(--accent) 6%,transparent),rgba(255,255,255,.02))", boxShadow:"0 0 30px color-mix(in srgb,var(--accent) 8%,transparent) inset" }}>
             <div className="flex items-center justify-between gap-3 mb-[16px] md:mb-[18px]">
@@ -564,59 +699,99 @@ export function NeonKissaApp() {
                 <p className="mt-1 text-[13px] leading-[1.5]" style={{ color:"var(--subtle)" }}>{aiRec.reason}</p>
               </div>
             )}
+
+            {/* Ranked 2nd & 3rd */}
+            {rankedMatches.length > 1 && (
+              <div className="mt-[20px] pt-[18px] border-t border-white/[.08]">
+                <p className="m-0 mb-[12px] mono text-[11px] tracking-[.16em] uppercase" style={{ color:"#6f655e" }}>{t.rankLabel}</p>
+                <div className="flex flex-col gap-[10px]">
+                  {rankedMatches.slice(1, 3).map(({ it }, idx) => {
+                    const d = lang === "jp" ? it.jp : it.en;
+                    return (
+                      <div key={it.glass} className="flex items-center gap-3 p-[12px_14px] rounded-[12px]"
+                        style={{ background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.07)" }}>
+                        <span className="mono text-[11px] font-bold w-[22px] text-center flex-shrink-0" style={{ color:"#6f655e" }}>#{idx + 2}</span>
+                        <span style={{ color:"var(--subtle)", flexShrink:0 }}>{GlassSVG[it.glass]}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="m-0 text-[13px] font-bold truncate">{d.name}</p>
+                          <div className="flex gap-[6px] mt-[4px]">
+                            {it.tags.slice(0, 2).map(tag => (
+                              <span key={tag} className="text-[10px] px-[8px] py-[3px] rounded-full"
+                                style={{ color:"#8a7f78", background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.08)" }}>{tag}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <span className="mono text-[13px] whitespace-nowrap flex-shrink-0" style={{ color:"var(--muted)" }}>{it.price}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* ── ATMOSPHERE ──────────────────────────────── */}
-      <section id="atmosphere" className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px]" style={{ scrollMarginTop:68 }}>
+      <section id="atmosphere"
+        ref={atmosReveal.ref as React.RefObject<HTMLElement>}
+        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px] nk-reveal${atmosReveal.visible?" is-visible":""}`}
+        style={{ scrollMarginTop:68 }}>
         <SectionHead num="03" accent="accent2" divider="dual" title={t.atmosTitle} jp="雰囲気" sub={t.atmosSub} />
 
         {isMobile ? (
-          /* Mobile: simple 2-col grid, no spanning */
           <div className="grid grid-cols-2 gap-[10px]" style={{ gridAutoRows:"140px" }}>
-            <AtmosTile url="https://images.unsplash.com/photo-1525268323446-0505b6fe7778?fm=jpg&q=80&w=800&auto=format&fit=crop" caption={t.atmosCap1} />
-            <AtmosTile url="https://images.unsplash.com/photo-1536935338788-846bb9981813?fm=jpg&q=80&w=800&auto=format&fit=crop" />
-            <AtmosTile url="https://images.unsplash.com/photo-1572116469696-31de0f17cc34?fm=jpg&q=80&w=800&auto=format&fit=crop" />
-            <AtmosTile url="https://images.unsplash.com/photo-1470337458703-46ad1756a187?fm=jpg&q=80&w=800&auto=format&fit=crop" />
-            <AtmosTile url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?fm=jpg&q=80&w=800&auto=format&fit=crop" />
-            <AtmosTile url="https://images.unsplash.com/photo-1546171753-97d7676e4602?fm=jpg&q=80&w=800&auto=format&fit=crop" caption={t.atmosCap2} />
+            <AtmosTile url={usp(atmos[0],800)} caption={t.atmosCap1} />
+            <AtmosTile url={usp(atmos[1],800)} />
+            <AtmosTile url={usp(atmos[2],800)} />
+            <AtmosTile url={usp(atmos[3],800)} />
+            <AtmosTile url={usp(atmos[4],800)} />
+            <AtmosTile url={usp(atmos[5],800)} caption={t.atmosCap2} />
           </div>
         ) : (
-          /* Desktop: complex mosaic with col/row spanning */
           <div className="grid gap-3" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
-            <AtmosTile url="https://images.unsplash.com/photo-1525268323446-0505b6fe7778?fm=jpg&q=80&w=1600&auto=format&fit=crop" col="1/3" row="1/3" caption={t.atmosCap1} />
-            <AtmosTile url="https://images.unsplash.com/photo-1536935338788-846bb9981813?fm=jpg&q=80&w=800&auto=format&fit=crop" col="3" row="1" />
-            <AtmosTile url="https://images.unsplash.com/photo-1572116469696-31de0f17cc34?fm=jpg&q=80&w=800&auto=format&fit=crop" col="4" row="1/3" />
-            <AtmosTile url="https://images.unsplash.com/photo-1470337458703-46ad1756a187?fm=jpg&q=80&w=800&auto=format&fit=crop" col="3" row="2" />
-            <AtmosTile url="https://images.unsplash.com/photo-1543007630-9710e4a00a20?fm=jpg&q=80&w=800&auto=format&fit=crop" col="1" row="3" />
-            <AtmosTile url="https://images.unsplash.com/photo-1546171753-97d7676e4602?fm=jpg&q=80&w=1200&auto=format&fit=crop" col="2/4" row="3" caption={t.atmosCap2} />
-            <AtmosTile url="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=800&auto=format&fit=crop" col="4" row="3" />
+            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" caption={t.atmosCap1} />
+            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" />
+            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" />
+            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" />
+            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" />
+            <AtmosTile url={usp(atmos[5],1200)} col="2/4" row="3" caption={t.atmosCap2} />
+            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" />
           </div>
         )}
       </section>
 
       {/* ── RESERVE ─────────────────────────────────── */}
-      <section id="reserve" className="border-t border-b border-white/[.07] bg-white/[.015]" style={{ scrollMarginTop:68 }}>
+      <section id="reserve"
+        ref={reserveReveal.ref as React.RefObject<HTMLElement>}
+        className={`border-t border-b border-white/[.07] bg-white/[.015] nk-reveal${reserveReveal.visible?" is-visible":""}`}
+        style={{ scrollMarginTop:68 }}>
         <div className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px]">
           <SectionHead num="04" accent="green" divider="green" title={t.reserveTitle} jp="予約" sub={t.reserveSub} />
-          {/* Grid: single column on mobile, 1.25fr/0.85fr on desktop */}
           <div className="grid grid-cols-1 md:grid-cols-[1.25fr_.85fr] gap-[18px] md:gap-[22px] items-start">
             <div className="border border-white/[.12] rounded-[18px] p-[22px] md:p-8 bg-[rgba(11,8,9,.5)]">
               {!formSent ? (
-                <form onSubmit={e => { e.preventDefault(); setFormSent(true); }} className="flex flex-col gap-4">
+                <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fName}<input required className={inputCls} /></label>
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fEmail}<input required type="email" className={inputCls} /></label>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fName}<input name="name" required className={inputCls} /></label>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fEmail}<input name="email" required type="email" className={inputCls} /></label>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fDate}<input type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fTime}<input type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fGuests}<input type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fDate}<input name="date" type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fTime}<input name="time" type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fGuests}<input name="guests" type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
                   </div>
-                  <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fMsg}<textarea rows={3} className={inputCls + " resize-y"} /></label>
-                  <button type="submit" className="self-start font-bold text-[15px] font-[inherit] border-none px-7 py-[14px] rounded-full cursor-pointer text-white transition-colors"
-                    style={{ background:"var(--accent)", boxShadow:"0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)" }}>{t.fSend}</button>
+                  <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fMsg}<textarea name="message" rows={3} className={inputCls + " resize-y"} /></label>
+                  <div className="flex flex-col gap-2">
+                    <button type="submit" disabled={formSubmitting}
+                      className="self-start font-bold text-[15px] font-[inherit] border-none px-7 py-[14px] rounded-full cursor-pointer text-white transition-all disabled:opacity-60"
+                      style={{ background:"var(--accent)", boxShadow:"0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)" }}>
+                      {formSubmitting ? t.fSending : t.fSend}
+                    </button>
+                    {formError && (
+                      <p className="text-[13px]" style={{ color:"#ff6b7a" }}>{formError}</p>
+                    )}
+                  </div>
                   <p className="text-[12px]" style={{ color:"#7a6f68" }}>{t.fHint}</p>
                 </form>
               ) : (
@@ -648,7 +823,10 @@ export function NeonKissaApp() {
       </section>
 
       {/* ── ACCESS ──────────────────────────────────── */}
-      <section id="access" className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[90px] pb-[48px] md:pb-[60px]" style={{ scrollMarginTop:68 }}>
+      <section id="access"
+        ref={accessReveal.ref as React.RefObject<HTMLElement>}
+        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[90px] pb-[48px] md:pb-[60px] nk-reveal${accessReveal.visible?" is-visible":""}`}
+        style={{ scrollMarginTop:68 }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[32px] md:gap-[48px] items-center">
           <div>
             <div className="w-16 h-px mb-4" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
@@ -676,10 +854,28 @@ export function NeonKissaApp() {
               </div>
             </div>
           </div>
-          <div className="h-[220px] md:h-[300px] rounded-[16px] overflow-hidden flex items-center justify-center"
-            style={{ border:"1px dashed rgba(255,255,255,.18)", background:"repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 12px,transparent 12px 24px)" }}>
-            <span className="mono text-[12px] tracking-[.16em]" style={{ color:"#6f655e" }}>[ google maps embed ]</span>
-          </div>
+
+          {/* Google Maps link — replaces the old placeholder */}
+          <a href="https://www.google.com/maps/search/?api=1&query=2-2-1+Kabukicho+Shinjuku+Tokyo"
+            target="_blank" rel="noopener noreferrer"
+            className="group no-underline h-[220px] md:h-[300px] rounded-[16px] overflow-hidden flex flex-col items-center justify-center gap-5 transition-all"
+            style={{ border:"1px solid rgba(255,255,255,.12)", background:"rgba(255,255,255,.02)" }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 45%,transparent)")}
+            onMouseLeave={e => (e.currentTarget.style.borderColor="rgba(255,255,255,.12)")}>
+            <svg width="36" height="44" viewBox="0 0 36 44" fill="none" aria-hidden>
+              <path d="M18 2C10.268 2 4 8.268 4 16c0 10.5 14 26 14 26S32 26.5 32 16c0-7.732-6.268-14-14-14z"
+                fill="color-mix(in srgb,var(--accent) 20%,transparent)"
+                stroke="var(--accent)" strokeWidth="1.5"/>
+              <circle cx="18" cy="16" r="5" fill="var(--accent)" opacity=".9"/>
+            </svg>
+            <div className="text-center px-6">
+              <p className="m-0 text-[14px] font-medium" style={{ color:"var(--subtle)" }}>{t.addr}</p>
+              <span className="inline-flex items-center gap-[6px] mt-3 mono text-[12px] tracking-[.1em] px-[16px] py-[9px] rounded-full transition-all"
+                style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 35%,transparent)", background:"color-mix(in srgb,var(--accent) 7%,transparent)" }}>
+                {t.mapsBtn} ↗
+              </span>
+            </div>
+          </a>
         </div>
       </section>
 
@@ -692,6 +888,17 @@ export function NeonKissaApp() {
           <span className="text-[12px]" style={{ color:"#6f655e" }}>{t.footer}</span>
         </div>
       </footer>
+
+      {/* ── SCROLL TO TOP ────────────────────────────── */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="Back to top"
+          className="fixed left-[14px] md:left-[22px] bottom-[14px] md:bottom-[22px] z-[79] w-[46px] h-[46px] rounded-full border-none cursor-pointer flex items-center justify-center text-white text-[18px] font-bold"
+          style={{ background:"var(--accent)", boxShadow:"0 4px 18px color-mix(in srgb,var(--accent) 45%,transparent)", animation:"nkPop .22s ease both" }}>
+          ↑
+        </button>
+      )}
 
       {/* ── CHATBOT ─────────────────────────────────── */}
       <div className="fixed right-[14px] md:right-[22px] bottom-[14px] md:bottom-[22px] z-[80] flex flex-col items-end gap-[12px] md:gap-[14px]">
@@ -707,7 +914,6 @@ export function NeonKissaApp() {
               boxShadow:"0 24px 70px rgba(0,0,0,.65),0 0 44px color-mix(in srgb,var(--accent) 16%,transparent)",
               animation:"nkPop .28s ease both"
             }}>
-            {/* Chat header */}
             <div className="flex items-center gap-3 p-[14px_16px] md:p-[16px_18px] border-b border-white/[.08]"
               style={{ background:"color-mix(in srgb,var(--accent) 6%,transparent)" }}>
               <div className="w-[38px] h-[38px] md:w-[40px] md:h-[40px] rounded-full flex-shrink-0 flex items-center justify-center text-[17px] md:text-[19px] text-white"
@@ -722,7 +928,6 @@ export function NeonKissaApp() {
               <button onClick={() => setChatOpen(false)} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer" style={{ color:"#8a7f78" }}>✕</button>
             </div>
 
-            {/* Messages */}
             <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-[14px] md:p-[18px] flex flex-col gap-[10px] md:gap-[11px]">
               {chatMsgs.map((m, i) => (
                 <div key={i} className={`flex ${m.role==="user"?"justify-end":"justify-start"}`}>
@@ -743,7 +948,6 @@ export function NeonKissaApp() {
               )}
             </div>
 
-            {/* Suggestion chips */}
             {showSugg && chatMsgs.length <= 1 && (
               <div className="flex flex-wrap gap-[7px] px-[14px] md:px-[18px] pb-3">
                 {t.chatSugg.map(s => (
@@ -756,7 +960,6 @@ export function NeonKissaApp() {
               </div>
             )}
 
-            {/* Input row */}
             <div className="flex gap-2 p-[12px_14px] md:p-[14px_16px] border-t border-white/[.08]">
               <input className="flex-1 bg-black/40 border border-white/10 rounded-[12px] px-[14px] py-[11px] text-white text-[14px] font-[inherit] outline-none"
                 value={chatInput} onChange={e => setChatInput(e.target.value)}
@@ -769,7 +972,6 @@ export function NeonKissaApp() {
           </div>
         )}
 
-        {/* Launcher button */}
         <button onClick={openChat}
           className="inline-flex items-center gap-[8px] md:gap-[10px] border-none text-white font-[inherit] font-bold text-[13px] md:text-[14px] px-[16px] md:px-5 py-[11px] md:py-[13px] rounded-full cursor-pointer"
           style={{ background:"linear-gradient(135deg,var(--accent),var(--accent2))", boxShadow:"0 8px 30px color-mix(in srgb,var(--accent) 40%,transparent)" }}>
