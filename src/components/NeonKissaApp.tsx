@@ -666,7 +666,7 @@ export function NeonKissaApp() {
         className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px] nk-reveal${finderReveal.visible?" is-visible":""}`}
         style={{ scrollMarginTop:68 }}>
         <SectionHead num="02" accent="accent2" divider="dual" title={t.finderTitle} jp="一杯を探す" sub={t.finderSub} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px] md:gap-[22px] items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px] md:gap-[22px] items-stretch">
           {/* Controls */}
           <div className="border border-white/10 rounded-[18px] p-[22px] md:p-[30px] bg-white/[.025]">
             <FilterGroup label={t.fMood} options={t.moodOpts} value={fMood} onChange={setFMood} />
@@ -788,7 +788,7 @@ export function NeonKissaApp() {
         style={{ scrollMarginTop:68 }}>
         <div className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px]">
           <SectionHead num="04" accent="green" divider="green" title={t.reserveTitle} jp="予約" sub={t.reserveSub} />
-          <div className="grid grid-cols-1 md:grid-cols-[1.25fr_.85fr] gap-[18px] md:gap-[22px] items-start">
+          <div className="grid grid-cols-1 md:grid-cols-[1.25fr_.85fr] gap-[18px] md:gap-[22px] items-stretch">
             <div className="border border-white/[.12] rounded-[18px] p-[22px] md:p-8 bg-[rgba(11,8,9,.5)]">
               {!formSent ? (
                 <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
