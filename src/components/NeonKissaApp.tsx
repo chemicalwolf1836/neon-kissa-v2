@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, type ReactElement } from "rea
 
 /* ── CONFIG ──────────────────────────────────────────── */
 // Sign up free at formspree.io and replace with your actual form ID
-const FORMSPREE_ID = "YOUR_FORM_ID";
+const FORMSPREE_ID = "mwvdobgy";
 
 /* ── TYPES ───────────────────────────────────────────── */
 type Lang = "en" | "jp";
