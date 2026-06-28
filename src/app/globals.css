@@ -43,6 +43,15 @@
 }
 .nk-reveal            { opacity:0; }
 .nk-reveal.is-visible { animation:nkReveal 0.55s cubic-bezier(.22,.68,0,1.2) both; }
+@keyframes nkShimmer {
+  0%   { transform:translateX(-100%); }
+  100% { transform:translateX(200%); }
+}
+.nk-shimmer {
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);
+  animation:nkShimmer 1.6s ease-in-out 2;
+  pointer-events:none;
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:.01ms!important; animation-iteration-count:1!important; }
 }

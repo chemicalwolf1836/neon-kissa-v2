@@ -25,6 +25,15 @@ export const metadata: Metadata = {
     description:
       "A bilingual cocktail hideout in Shinjuku. Walk-ins welcome. Open till 03:00.",
     type: "website",
+    url: "https://neon-kissa-v2.vercel.app",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1608060146923-7b8ab13e22bb?w=1200&h=630&fit=crop&q=80",
+        width: 1200,
+        height: 630,
+        alt: "Neon Kissa — Tokyo Cocktail Bar",
+      },
+    ],
   },
 };
 

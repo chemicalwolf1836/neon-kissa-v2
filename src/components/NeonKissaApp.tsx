@@ -422,31 +422,51 @@ export function NeonKissaApp() {
     .sort((a, b) => b.score - a.score);
   const bestMatch = rankedMatches[0].it;
 
-  const askHanaAI = useCallback(() => {
+  const askHanaAI = useCallback(async () => {
     setAiLoading(true);
     setAiRec(null);
-    setTimeout(() => {
-      const d = lang === "jp" ? bestMatch.jp : bestMatch.en;
-      const reason = lang === "jp"
-        ? "今の気分とお好みにぴったりの一杯です。ぜひお試しください。"
-        : "This one matches your mood and flavour preferences perfectly — a great choice for tonight.";
-      setAiRec({ name: d.name, reason });
-      setAiLoading(false);
-    }, 900);
-  }, [bestMatch, lang]);
+    const d = lang === "jp" ? bestMatch.jp : bestMatch.en;
+    try {
+      const prompt = lang === "jp"
+        ? `カクテルファインダーで「${d.name}」がおすすめされました。気分は${fMood}、甘さは${fSweet}です。このカクテルが今夜ぴったりな理由を一文で教えてください。`
+        : `The Cocktail Finder matched "${d.name}" for mood: ${fMood}, sweetness: ${fSweet}${fLikes ? `, likes: ${fLikes}` : ""}. In one sentence, why is this the perfect pick for tonight?`;
+      const res = await fetch("/api/hana", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], lang }),
+      });
+      const data = await res.json();
+      setAiRec({ name: d.name, reason: data.reply ?? (lang === "jp" ? "今夜ぴったりの一杯です。✦" : "A perfect match for tonight. ✦") });
+    } catch {
+      setAiRec({ name: d.name, reason: lang === "jp" ? "今の気分にぴったりの一杯です。✦" : "This one matches your mood perfectly — great choice for tonight. ✦" });
+    }
+    setAiLoading(false);
+  }, [bestMatch, lang, fMood, fSweet, fLikes]);
 
-  const sendChat = useCallback((text: string) => {
+  const sendChat = useCallback(async (text: string) => {
     if (!text.trim() || chatLoading) return;
-    const msg: ChatMsg = { role: "user", text: text.trim() };
-    setChatMsgs(prev => [...prev, msg]);
+    const userMsg: ChatMsg = { role: "user", text: text.trim() };
+    const history = [...chatMsgs, userMsg];
+    setChatMsgs(history);
     setChatInput("");
     setShowSugg(false);
     setChatLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/hana", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: history.map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })),
+          lang,
+        }),
+      });
+      const data = await res.json();
+      setChatMsgs(prev => [...prev, { role: "bot", text: data.reply ?? hanaResponse(text, lang) }]);
+    } catch {
       setChatMsgs(prev => [...prev, { role: "bot", text: hanaResponse(text, lang) }]);
-      setChatLoading(false);
-    }, 700);
-  }, [chatLoading, lang]);
+    }
+    setChatLoading(false);
+  }, [chatLoading, lang, chatMsgs]);
 
   const openChat = useCallback(() => {
     setChatOpen(true);
@@ -862,7 +882,7 @@ export function NeonKissaApp() {
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fName}<input name="name" required className={inputCls} /></label>
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fEmail}<input name="email" required type="email" className={inputCls} /></label>
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fDate}<input name="date" type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fTime}<input name="time" type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
                     <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fGuests}<input name="guests" type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
@@ -931,11 +951,11 @@ export function NeonKissaApp() {
               <div className="flex gap-[32px] md:gap-[40px]">
                 <div>
                   <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.phoneLabel}</div>
-                  <div>+81 3-5362-XXXX</div>
+                  <a href="tel:+81353620000" className="hover:opacity-75 transition-opacity">+81 3-5362-XXXX</a>
                 </div>
                 <div>
                   <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>Email</div>
-                  <div>hello@neonkissa.jp</div>
+                  <a href="mailto:hello@neonkissa.jp" className="hover:opacity-75 transition-opacity">hello@neonkissa.jp</a>
                 </div>
               </div>
             </div>
@@ -1118,6 +1138,7 @@ function AtmosTile({ url, col, row }: { url:string; col?:string; row?:string }) 
   return (
     <div className="relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08] bg-[#0b0809]"
       style={{ gridColumn:col, gridRow:row }}>
+      <div className="absolute inset-0 nk-shimmer" />
       <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
         style={{ backgroundImage:`url('${url}')`, transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }}
         onMouseEnter={e => (e.currentTarget.style.transform="scale(1.06)")}
