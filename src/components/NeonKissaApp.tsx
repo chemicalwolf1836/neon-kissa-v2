@@ -132,9 +132,9 @@ const ATMOS_POOL: string[][] = [
     "photo-1617524455617-ce1e266aa810",
     "photo-1615887023520-e20970765ef8",
     "photo-1611266353853-d370b67187ed",
-    "photo-1551024709-8f23befc8f86",
+    "photo-1681732500310-34637949518c",
     "photo-1535958636474-b021ee887b13",
-    "photo-1507133750040-4a8f57021571",
+    "photo-1644809818390-9a441722ae24",
     "photo-1574870111867-089730e5a72b",
     "photo-1560512823-829485b8bf24",
     "photo-1551024601-bec78aea704b",
@@ -169,7 +169,7 @@ const FEAT_POOL = [
   "photo-1509669803555-fd5edd8d5a41",
   "photo-1617524455617-ce1e266aa810",
   "photo-1560512823-829485b8bf24",
-  "photo-1551024709-8f23befc8f86",
+  "photo-1556881261-e41e8db21055",
   "photo-1681732488216-72dced97cac7",
   "photo-1644809818390-9a441722ae24",
   "photo-1556881261-e41e8db21055",
@@ -203,8 +203,6 @@ const T = {
     moodOpts:[{v:"after-work",l:"After-work"},{v:"chill",l:"Chill"},{v:"romantic",l:"Romantic"},{v:"party",l:"Party"}] as {v:string;l:string}[],
     sweetOpts:[{v:"any",l:"Any"},{v:"dry",l:"Dry"},{v:"balanced",l:"Balanced"},{v:"sweet",l:"Sweet"}] as {v:string;l:string}[],
     atmosTitle:"The Atmosphere", atmosSub:"A red-lit counter tucked off the main street — see the vibe before you visit.",
-    atmosCap1:"The counter", atmosCap2:"Off Kabukicho",
-    atmosCap3:"Pour", atmosCap4:"Night shelf", atmosCap5:"Last light", atmosCap6:"Before service", atmosCap7:"Smoke",
     reserveTitle:"Reservations", reserveSub:"A quick request — we confirm by email within 24 hours.",
     fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
     fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We'll reply by email within 24 hours. Walk-ins also welcome.",
@@ -246,8 +244,6 @@ const T = {
     moodOpts:[{v:"after-work",l:"仕事帰り"},{v:"chill",l:"リラックス"},{v:"romantic",l:"デート"},{v:"party",l:"盛り上がり"}] as {v:string;l:string}[],
     sweetOpts:[{v:"any",l:"指定なし"},{v:"dry",l:"ドライ"},{v:"balanced",l:"バランス"},{v:"sweet",l:"甘め"}] as {v:string;l:string}[],
     atmosTitle:"雰囲気", atmosSub:"大通りを外れた赤いカウンター — 訪れる前に雰囲気を感じてください。",
-    atmosCap1:"カウンター", atmosCap2:"歌舞伎町近く",
-    atmosCap3:"注ぎ", atmosCap4:"夜の棚", atmosCap5:"閉店前", atmosCap6:"仕込み", atmosCap7:"煙",
     reserveTitle:"予約", reserveSub:"簡単なリクエスト — 24時間以内にメールで確認します。",
     fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
     fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fSending:"送信中…", fHint:"24時間以内にメールにてご返信いたします。",
@@ -831,22 +827,22 @@ export function NeonKissaApp() {
 
         {isMobile ? (
           <div className="grid grid-cols-2 gap-[10px]" style={{ gridAutoRows:"140px" }}>
-            <AtmosTile url={usp(atmos[0],800)} caption={t.atmosCap1} />
-            <AtmosTile url={usp(atmos[1],800)} caption={t.atmosCap3} />
-            <AtmosTile url={usp(atmos[2],800)} caption={t.atmosCap4} />
-            <AtmosTile url={usp(atmos[3],800)} caption={t.atmosCap5} />
-            <AtmosTile url={usp(atmos[4],800)} caption={t.atmosCap6} />
-            <AtmosTile url={usp(atmos[5],800)} caption={t.atmosCap2} />
+            <AtmosTile url={usp(atmos[0],800)} />
+            <AtmosTile url={usp(atmos[1],800)} />
+            <AtmosTile url={usp(atmos[2],800)} />
+            <AtmosTile url={usp(atmos[3],800)} />
+            <AtmosTile url={usp(atmos[4],800)} />
+            <AtmosTile url={usp(atmos[5],800)} />
           </div>
         ) : (
           <div className="grid gap-3" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
-            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" caption={t.atmosCap1} />
-            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" caption={t.atmosCap3} />
-            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" caption={t.atmosCap4} />
-            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" caption={t.atmosCap5} />
-            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" caption={t.atmosCap6} />
-            <AtmosTile url={usp(atmos[5],1200)} col="2/4" row="3" caption={t.atmosCap2} />
-            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" caption={t.atmosCap7} />
+            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" />
+            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" />
+            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" />
+            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" />
+            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" />
+            <AtmosTile url={usp(atmos[5],1200)} col="2/4" row="3" />
+            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" />
           </div>
         )}
       </section>
@@ -1118,7 +1114,7 @@ function FilterGroup({ label, options, value, onChange }: { label:string; option
   );
 }
 
-function AtmosTile({ url, col, row, caption }: { url:string; col?:string; row?:string; caption?:string }) {
+function AtmosTile({ url, col, row }: { url:string; col?:string; row?:string }) {
   return (
     <div className="relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08] bg-[#0b0809]"
       style={{ gridColumn:col, gridRow:row }}>
@@ -1126,7 +1122,6 @@ function AtmosTile({ url, col, row, caption }: { url:string; col?:string; row?:s
         style={{ backgroundImage:`url('${url}')`, transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }}
         onMouseEnter={e => (e.currentTarget.style.transform="scale(1.06)")}
         onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")} />
-      {caption && <p className="absolute left-[12px] md:left-[18px] bottom-[12px] md:bottom-[15px] m-0 font-bold text-[14px] md:text-[16px] pointer-events-none" style={{ textShadow:"0 1px 12px rgba(0,0,0,.6)" }}>{caption}</p>}
     </div>
   );
 }
