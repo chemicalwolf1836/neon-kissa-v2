@@ -80,39 +80,101 @@ const MENU: MenuItem[] = [
     jp:{name:"サイバー・エスプレッソ", jp:"Cyber Espresso", desc:"ウォッカ、コーヒー、カカオ、ベルベットフォーム"} },
 ];
 
-const HERO_IMGS = [
-  "https://images.unsplash.com/photo-1525268323446-0505b6fe7778?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1543007630-9710e4a00a20?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1546171753-97d7676e4602?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1535958636474-b021ee887b13?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1758881606455-26cc1c2c8de4?fm=jpg&q=80&w=2400&auto=format&fit=crop",
-];
-
 /* ── PHOTO HELPER ────────────────────────────────────── */
 const usp = (id: string, w: number) =>
   `https://images.unsplash.com/${id}?fm=jpg&q=80&w=${w}&auto=format&fit=crop`;
 
-/* ── ATMOSPHERE SETS (3 rotating daily, 7 tiles each) ── */
-const ATMOS_PHOTO_IDS = [
-  /* Set 0 — dark ambient */
-  ["photo-1525268323446-0505b6fe7778","photo-1536935338788-846bb9981813","photo-1572116469696-31de0f17cc34","photo-1470337458703-46ad1756a187","photo-1543007630-9710e4a00a20","photo-1546171753-97d7676e4602","photo-1514362545857-3bc16c4c7d1b"],
-  /* Set 1 — warm cocktail glow */
-  ["photo-1551024709-8f23befc8f86","photo-1535958636474-b021ee887b13","photo-1507133750040-4a8f57021571","photo-1574870111867-089730e5a72b","photo-1560512823-829485b8bf24","photo-1758881606455-26cc1c2c8de4","photo-1551024601-bec78aea704b"],
-  /* Set 2 — neon cyberpunk */
-  ["photo-1546171753-97d7676e4602","photo-1579656592043-a20e25a4aa4b","photo-1525268323446-0505b6fe7778","photo-1477763858572-cda7deaa9bc5","photo-1572116469696-31de0f17cc34","photo-1543007630-9710e4a00a20","photo-1506377247377-2a5b3b417ebb"],
-] as const;
-
-/* ── FEATURED COCKTAIL IMAGES (7, one per day-of-week) ─ */
-const FEAT_IMG_IDS = [
+/* ── HERO POOL (14 IDs — rotates daily, new image every day) ── */
+const HERO_POOL = [
+  "photo-1683744129482-2cdd6645ed29",
+  "photo-1610515660473-c11d4f3f7d37",
+  "photo-1773188243990-b50e86881bd7",
+  "photo-1655917080333-ab794719f842",
+  "photo-1694021256251-ca1607500703",
+  "photo-1608060146923-7b8ab13e22bb",
+  "photo-1470256699805-a29e1b58598a",
+  "photo-1500217052183-bc01eee1a74e",
+  "photo-1597075687490-8f673c6c17f6",
+  "photo-1525268323446-0505b6fe7778",
+  "photo-1543007630-9710e4a00a20",
+  "photo-1546171753-97d7676e4602",
   "photo-1514362545857-3bc16c4c7d1b",
-  "photo-1551024601-bec78aea704b",
+  "photo-1572116469696-31de0f17cc34",
+];
+
+/* ── ATMOSPHERE POOLS (3 themed sets × 14 IDs each)
+   Theme switches every week; within the week a 7-photo
+   window slides forward one step each day for daily variety. ── */
+const ATMOS_POOL: string[][] = [
+  /* Set 0 — dim & intimate: counters, candlelit glassware, dark wood */
+  [
+    "photo-1772311698901-fe3fa07141be",
+    "photo-1778104959337-5260c89e2293",
+    "photo-1776775436942-948f84ed2fd2",
+    "photo-1778104959469-0861d423de46",
+    "photo-1776018396028-d40694777383",
+    "photo-1778104959348-e630dabc34e3",
+    "photo-1777791374515-372807e0228a",
+    "photo-1550426735-c33c7ce414ff",
+    "photo-1514361892635-6b07e31e75f9",
+    "photo-1706925737212-869d063752c2",
+    "photo-1589378938275-947b7adf8665",
+    "photo-1583747073667-bef748231eea",
+    "photo-1671053807715-675fa581f103",
+    "photo-1638884896143-f1b2501e9a61",
+  ],
+  /* Set 1 — warm craft: cocktail pours, citrus, copper, amber liquid */
+  [
+    "photo-1607622750671-6cd9a99eabd1",
+    "photo-1566417713940-fe7c737a9ef2",
+    "photo-1509669803555-fd5edd8d5a41",
+    "photo-1578553981438-cebe08c94b4e",
+    "photo-1617524455617-ce1e266aa810",
+    "photo-1615887023520-e20970765ef8",
+    "photo-1611266353853-d370b67187ed",
+    "photo-1551024709-8f23befc8f86",
+    "photo-1535958636474-b021ee887b13",
+    "photo-1507133750040-4a8f57021571",
+    "photo-1574870111867-089730e5a72b",
+    "photo-1560512823-829485b8bf24",
+    "photo-1551024601-bec78aea704b",
+    "photo-1615887023516-9b6bcd559e87",
+  ],
+  /* Set 2 — neon & Tokyo: neon signs, rain-wet streets, kanji, night exterior */
+  [
+    "photo-1534214526114-0ea4d47b04f2",
+    "photo-1551641506-ee5bf4cb45f1",
+    "photo-1542052125323-e69ad37a47c2",
+    "photo-1536768139911-e290a59011e4",
+    "photo-1559245718-212fba2d22e2",
+    "photo-1608874973445-de098faf870f",
+    "photo-1572491671626-ca1747c3cc57",
+    "photo-1617870314635-fc819547ec11",
+    "photo-1634714434666-ef41b76b9cc9",
+    "photo-1571866735550-7b1ae3bdb144",
+    "photo-1600506112440-cd3b52c88cfe",
+    "photo-1579656592043-a20e25a4aa4b",
+    "photo-1477763858572-cda7deaa9bc5",
+    "photo-1506377247377-2a5b3b417ebb",
+  ],
+];
+
+/* ── FEATURED COCKTAIL POOL (14 IDs — rotates daily) ── */
+const FEAT_POOL = [
   "photo-1574870111867-089730e5a72b",
-  "photo-1507133750040-4a8f57021571",
-  "photo-1551024709-8f23befc8f86",
+  "photo-1551024601-bec78aea704b",
+  "photo-1514362545857-3bc16c4c7d1b",
+  "photo-1607622750671-6cd9a99eabd1",
+  "photo-1566417713940-fe7c737a9ef2",
+  "photo-1509669803555-fd5edd8d5a41",
+  "photo-1617524455617-ce1e266aa810",
   "photo-1560512823-829485b8bf24",
-  "photo-1535958636474-b021ee887b13",
+  "photo-1551024709-8f23befc8f86",
+  "photo-1681732488216-72dced97cac7",
+  "photo-1644809818390-9a441722ae24",
+  "photo-1556881261-e41e8db21055",
+  "photo-1681732500310-34637949518c",
+  "photo-1613577813834-5dbb5fd8ada6",
 ];
 
 /* ── CONTENT ─────────────────────────────────────────── */
@@ -142,6 +204,7 @@ const T = {
     sweetOpts:[{v:"any",l:"Any"},{v:"dry",l:"Dry"},{v:"balanced",l:"Balanced"},{v:"sweet",l:"Sweet"}] as {v:string;l:string}[],
     atmosTitle:"The Atmosphere", atmosSub:"A red-lit counter tucked off the main street — see the vibe before you visit.",
     atmosCap1:"The counter", atmosCap2:"Off Kabukicho",
+    atmosCap3:"Pour", atmosCap4:"Night shelf", atmosCap5:"Last light", atmosCap6:"Before service", atmosCap7:"Smoke",
     reserveTitle:"Reservations", reserveSub:"A quick request — we confirm by email within 24 hours.",
     fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
     fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We'll reply by email within 24 hours. Walk-ins also welcome.",
@@ -184,6 +247,7 @@ const T = {
     sweetOpts:[{v:"any",l:"指定なし"},{v:"dry",l:"ドライ"},{v:"balanced",l:"バランス"},{v:"sweet",l:"甘め"}] as {v:string;l:string}[],
     atmosTitle:"雰囲気", atmosSub:"大通りを外れた赤いカウンター — 訪れる前に雰囲気を感じてください。",
     atmosCap1:"カウンター", atmosCap2:"歌舞伎町近く",
+    atmosCap3:"注ぎ", atmosCap4:"夜の棚", atmosCap5:"閉店前", atmosCap6:"仕込み", atmosCap7:"煙",
     reserveTitle:"予約", reserveSub:"簡単なリクエスト — 24時間以内にメールで確認します。",
     fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
     fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fSending:"送信中…", fHint:"24時間以内にメールにてご返信いたします。",
@@ -267,7 +331,7 @@ export function NeonKissaApp() {
   const [chatLoading, setChatLoading] = useState(false);
   const [showSugg, setShowSugg] = useState(true);
   const [heroUrl, setHeroUrl] = useState("");
-  const [atmosSetIdx, setAtmosSetIdx] = useState(0);
+  const [atmosPhotos, setAtmosPhotos] = useState<string[]>(ATMOS_POOL[0].slice(0, 7));
   const [featImg, setFeatImg] = useState("");
   const [navOpen, setNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -289,10 +353,14 @@ export function NeonKissaApp() {
   useEffect(() => {
     try { const s = localStorage.getItem("nk-lang"); if (s === "en" || s === "jp") setLang(s as Lang); } catch {}
     try { const p = localStorage.getItem("nk-pal"); if (["ruby","cyber","amber","jade"].includes(p!)) setPalette(p as Palette); } catch {}
-    const today = new Date().getDay();
-    setHeroUrl(HERO_IMGS[today % HERO_IMGS.length]);
-    setAtmosSetIdx(today % ATMOS_PHOTO_IDS.length);
-    setFeatImg(FEAT_IMG_IDS[today % FEAT_IMG_IDS.length]);
+    // days since epoch → daily rotation; weeks → weekly theme switch
+    const daysSinceEpoch = Math.floor(Date.now() / 86400000);
+    const weeksSinceEpoch = Math.floor(daysSinceEpoch / 7);
+    setHeroUrl(usp(HERO_POOL[daysSinceEpoch % HERO_POOL.length], 2400));
+    const themeIdx = weeksSinceEpoch % ATMOS_POOL.length;
+    const dayOffset = daysSinceEpoch % 7; // slide 7-photo window forward each day
+    setAtmosPhotos(ATMOS_POOL[themeIdx].slice(dayOffset, dayOffset + 7));
+    setFeatImg(FEAT_POOL[daysSinceEpoch % FEAT_POOL.length]);
     const nowH = new Date().getHours() + new Date().getMinutes() / 60;
     setOpenNow(nowH >= 18 || nowH < 3); // open daily 18:00–03:00
   }, []);
@@ -435,7 +503,7 @@ export function NeonKissaApp() {
   const NAV_IDS   = ["menu","finder","atmosphere","reserve","access"] as const;
 
   /* Current atmosphere tile IDs (updates once per day on mount) */
-  const atmos = ATMOS_PHOTO_IDS[atmosSetIdx];
+  const atmos = atmosPhotos;
 
   /* Live open/closed status (computed client-side to avoid hydration mismatch) */
   const openText = openNow === null ? t.openLabel : openNow ? t.openOpen : t.openClosed;
@@ -764,21 +832,21 @@ export function NeonKissaApp() {
         {isMobile ? (
           <div className="grid grid-cols-2 gap-[10px]" style={{ gridAutoRows:"140px" }}>
             <AtmosTile url={usp(atmos[0],800)} caption={t.atmosCap1} />
-            <AtmosTile url={usp(atmos[1],800)} />
-            <AtmosTile url={usp(atmos[2],800)} />
-            <AtmosTile url={usp(atmos[3],800)} />
-            <AtmosTile url={usp(atmos[4],800)} />
+            <AtmosTile url={usp(atmos[1],800)} caption={t.atmosCap3} />
+            <AtmosTile url={usp(atmos[2],800)} caption={t.atmosCap4} />
+            <AtmosTile url={usp(atmos[3],800)} caption={t.atmosCap5} />
+            <AtmosTile url={usp(atmos[4],800)} caption={t.atmosCap6} />
             <AtmosTile url={usp(atmos[5],800)} caption={t.atmosCap2} />
           </div>
         ) : (
           <div className="grid gap-3" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
             <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" caption={t.atmosCap1} />
-            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" />
-            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" />
-            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" />
-            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" />
+            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" caption={t.atmosCap3} />
+            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" caption={t.atmosCap4} />
+            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" caption={t.atmosCap5} />
+            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" caption={t.atmosCap6} />
             <AtmosTile url={usp(atmos[5],1200)} col="2/4" row="3" caption={t.atmosCap2} />
-            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" />
+            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" caption={t.atmosCap7} />
           </div>
         )}
       </section>
@@ -1052,7 +1120,7 @@ function FilterGroup({ label, options, value, onChange }: { label:string; option
 
 function AtmosTile({ url, col, row, caption }: { url:string; col?:string; row?:string; caption?:string }) {
   return (
-    <div className="relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08]"
+    <div className="relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08] bg-[#0b0809]"
       style={{ gridColumn:col, gridRow:row }}>
       <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
         style={{ backgroundImage:`url('${url}')`, transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }}
