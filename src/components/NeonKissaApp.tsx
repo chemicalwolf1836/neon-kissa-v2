@@ -581,14 +581,14 @@ export function NeonKissaApp() {
             <div className="flex border border-white/[.14] rounded-full overflow-hidden mono text-[11px] tracking-[.1em]">
               {(["en","jp"] as const).map(l => (
                 <button key={l} onClick={() => setLang(l)}
-                  className={`px-[10px] md:px-3 py-[6px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)]"}`}>
+                  className={`px-[14px] md:px-[18px] py-[6px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)]"}`}>
                   {l.toUpperCase()}
                 </button>
               ))}
             </div>
             {/* Reserve button — hidden on mobile */}
             <a href="#reserve"
-              className="hidden sm:inline-flex mono text-[12px] tracking-[.14em] no-underline px-4 py-[9px] rounded-full transition-all"
+              className="hidden sm:inline-flex items-center justify-center ml-[8px] mono text-[12px] tracking-[.14em] no-underline px-5 py-[9px] rounded-full transition-all"
               style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 40%,transparent)", background:"color-mix(in srgb,var(--accent) 8%,transparent)" }}>
               {t.navReserve}
             </a>
