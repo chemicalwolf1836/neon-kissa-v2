@@ -135,9 +135,9 @@ const ATMOS_POOL: string[][] = [
     "photo-1681732500310-34637949518c",
     "photo-1535958636474-b021ee887b13",
     "photo-1644809818390-9a441722ae24",
-    "photo-1574870111867-089730e5a72b",
+    "photo-1781785162713-41d46465b35b",
     "photo-1560512823-829485b8bf24",
-    "photo-1551024601-bec78aea704b",
+    "photo-1655917102337-576d921c297d",
     "photo-1615887023516-9b6bcd559e87",
   ],
   /* Set 2 — neon & Tokyo: neon signs, rain-wet streets, kanji, night exterior */
@@ -153,16 +153,16 @@ const ATMOS_POOL: string[][] = [
     "photo-1634714434666-ef41b76b9cc9",
     "photo-1571866735550-7b1ae3bdb144",
     "photo-1600506112440-cd3b52c88cfe",
-    "photo-1579656592043-a20e25a4aa4b",
-    "photo-1477763858572-cda7deaa9bc5",
-    "photo-1506377247377-2a5b3b417ebb",
+    "photo-1601042879364-f3947d3f9c16",
+    "photo-1617870435601-4a5d43be4bd7",
+    "photo-1604604994333-f1b0e9471186",
   ],
 ];
 
 /* ── FEATURED COCKTAIL POOL (14 IDs — rotates daily) ── */
 const FEAT_POOL = [
-  "photo-1574870111867-089730e5a72b",
-  "photo-1551024601-bec78aea704b",
+  "photo-1759358342214-c23ed81014bc",
+  "photo-1701722952679-beffce26d77a",
   "photo-1514362545857-3bc16c4c7d1b",
   "photo-1607622750671-6cd9a99eabd1",
   "photo-1566417713940-fe7c737a9ef2",
