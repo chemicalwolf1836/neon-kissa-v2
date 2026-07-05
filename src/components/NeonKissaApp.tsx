@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, type ReactElement } from "react";
+import { AtmosphereLightbox } from "./AtmosphereLightbox";
 
 /* ── CONFIG ──────────────────────────────────────────── */
 // Sign up free at formspree.io and replace with your actual form ID
@@ -203,6 +204,7 @@ const T = {
     moodOpts:[{v:"after-work",l:"After-work"},{v:"chill",l:"Chill"},{v:"romantic",l:"Romantic"},{v:"party",l:"Party"}] as {v:string;l:string}[],
     sweetOpts:[{v:"any",l:"Any"},{v:"dry",l:"Dry"},{v:"balanced",l:"Balanced"},{v:"sweet",l:"Sweet"}] as {v:string;l:string}[],
     atmosTitle:"The Atmosphere", atmosSub:"A red-lit counter tucked off the main street — see the vibe before you visit.",
+    atmosView:"View photo", lightboxClose:"Close photo", lightboxPrev:"Previous photo", lightboxNext:"Next photo",
     reserveTitle:"Reservations", reserveSub:"A quick request — we confirm by email within 24 hours.",
     fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
     fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We'll reply by email within 24 hours. Walk-ins also welcome.",
@@ -244,6 +246,7 @@ const T = {
     moodOpts:[{v:"after-work",l:"仕事帰り"},{v:"chill",l:"リラックス"},{v:"romantic",l:"デート"},{v:"party",l:"盛り上がり"}] as {v:string;l:string}[],
     sweetOpts:[{v:"any",l:"指定なし"},{v:"dry",l:"ドライ"},{v:"balanced",l:"バランス"},{v:"sweet",l:"甘め"}] as {v:string;l:string}[],
     atmosTitle:"雰囲気", atmosSub:"大通りを外れた赤いカウンター — 訪れる前に雰囲気を感じてください。",
+    atmosView:"写真を見る", lightboxClose:"写真を閉じる", lightboxPrev:"前の写真", lightboxNext:"次の写真",
     reserveTitle:"予約", reserveSub:"簡単なリクエスト — 24時間以内にメールで確認します。",
     fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
     fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fSending:"送信中…", fHint:"24時間以内にメールにてご返信いたします。",
@@ -335,7 +338,18 @@ export function NeonKissaApp() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [openNow, setOpenNow] = useState<boolean | null>(null);
   const [activeSection, setActiveSection] = useState<string>("");
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const chatBodyRef = useRef<HTMLDivElement>(null);
+  const lastTileRef = useRef<HTMLButtonElement | null>(null);
+
+  const openLightbox = useCallback((i: number, el: HTMLButtonElement | null) => {
+    lastTileRef.current = el;
+    setLightboxIndex(i);
+  }, []);
+  const closeLightbox = useCallback(() => {
+    setLightboxIndex(null);
+    lastTileRef.current?.focus();
+  }, []);
 
   /* Scroll-reveal refs */
   const menuReveal    = useReveal();
@@ -847,25 +861,37 @@ export function NeonKissaApp() {
 
         {isMobile ? (
           <div className="grid grid-cols-2 gap-[10px]" style={{ gridAutoRows:"140px" }}>
-            <AtmosTile url={usp(atmos[0],800)} />
-            <AtmosTile url={usp(atmos[1],800)} />
-            <AtmosTile url={usp(atmos[2],800)} />
-            <AtmosTile url={usp(atmos[3],800)} />
-            <AtmosTile url={usp(atmos[4],800)} />
-            <AtmosTile url={usp(atmos[5],800)} />
+            <AtmosTile url={usp(atmos[0],800)} label={t.atmosView} onOpen={el => openLightbox(0, el)} />
+            <AtmosTile url={usp(atmos[1],800)} label={t.atmosView} onOpen={el => openLightbox(1, el)} />
+            <AtmosTile url={usp(atmos[2],800)} label={t.atmosView} onOpen={el => openLightbox(2, el)} />
+            <AtmosTile url={usp(atmos[3],800)} label={t.atmosView} onOpen={el => openLightbox(3, el)} />
+            <AtmosTile url={usp(atmos[4],800)} label={t.atmosView} onOpen={el => openLightbox(4, el)} />
+            <AtmosTile url={usp(atmos[5],800)} label={t.atmosView} onOpen={el => openLightbox(5, el)} />
           </div>
         ) : (
           <div className="grid gap-3" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
-            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" />
-            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" />
-            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" />
-            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" />
-            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" />
-            <AtmosTile url={usp(atmos[5],1200)} col="2/4" row="3" />
-            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" />
+            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" label={t.atmosView} onOpen={el => openLightbox(0, el)} />
+            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
+            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
+            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
+            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
+            <AtmosTile url={usp(atmos[5],1200)} col="2/4" row="3" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
+            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" label={t.atmosView} onOpen={el => openLightbox(6, el)} />
           </div>
         )}
       </section>
+
+      {lightboxIndex !== null && (
+        <AtmosphereLightbox
+          photos={atmos.map(id => usp(id, 1600))}
+          index={lightboxIndex}
+          onNavigate={setLightboxIndex}
+          onClose={closeLightbox}
+          closeLabel={t.lightboxClose}
+          prevLabel={t.lightboxPrev}
+          nextLabel={t.lightboxNext}
+        />
+      )}
 
       {/* ── RESERVE ─────────────────────────────────── */}
       <section id="reserve"
@@ -1072,14 +1098,14 @@ export function NeonKissaApp() {
                 onKeyDown={e => e.key==="Enter" && sendChat(chatInput)}
                 placeholder={t.chatPh} />
               <button onClick={() => sendChat(chatInput)}
-                className="w-[44px] rounded-[12px] border-none text-white text-[17px] flex-shrink-0 cursor-pointer"
+                className="w-[44px] rounded-[12px] border-none text-white text-[17px] flex-shrink-0 cursor-pointer transition-all hover:brightness-110 active:scale-95"
                 style={{ background:"var(--accent)", boxShadow:"0 0 16px color-mix(in srgb,var(--accent) 40%,transparent)" }}>→</button>
             </div>
           </div>
         )}
 
         <button onClick={openChat}
-          className="inline-flex items-center gap-[8px] md:gap-[10px] border-none text-white font-[inherit] font-bold text-[13px] md:text-[14px] px-[16px] md:px-5 py-[11px] md:py-[13px] rounded-full cursor-pointer"
+          className="inline-flex items-center gap-[8px] md:gap-[10px] border-none text-white font-[inherit] font-bold text-[13px] md:text-[14px] px-[16px] md:px-5 py-[11px] md:py-[13px] rounded-full cursor-pointer transition-all hover:brightness-110 hover:-translate-y-[1px] active:scale-95"
           style={{ background:"linear-gradient(135deg,var(--accent),var(--accent2))", boxShadow:"0 8px 30px color-mix(in srgb,var(--accent) 40%,transparent)" }}>
           <span className="w-[28px] h-[28px] md:w-[30px] md:h-[30px] rounded-full bg-white/20 flex items-center justify-center text-[14px] md:text-[15px]">花</span>
           {t.chatLauncher}
@@ -1122,7 +1148,7 @@ function FilterGroup({ label, options, value, onChange }: { label:string; option
       <div className="flex flex-wrap gap-[8px] md:gap-[9px] mb-[18px] md:mb-[22px]">
         {options.map(o => (
           <button key={o.v} onClick={() => onChange(o.v)}
-            className="border rounded-full px-[13px] md:px-[15px] py-[8px] md:py-2 text-[13px] font-[inherit] cursor-pointer transition-all"
+            className={`border rounded-full px-[13px] md:px-[15px] py-[8px] md:py-2 text-[13px] font-[inherit] cursor-pointer transition-all${value!==o.v ? " hover:border-white/30 hover:text-white" : ""}`}
             style={ value===o.v
               ? { borderColor:"color-mix(in srgb,var(--accent) 60%,transparent)", background:"color-mix(in srgb,var(--accent) 12%,transparent)", color:"var(--accent-text)" }
               : { borderColor:"rgba(255,255,255,.14)", background:"none", color:"var(--subtle)" }}>
@@ -1134,15 +1160,17 @@ function FilterGroup({ label, options, value, onChange }: { label:string; option
   );
 }
 
-function AtmosTile({ url, col, row }: { url:string; col?:string; row?:string }) {
+function AtmosTile({ url, col, row, label, onOpen }: { url:string; col?:string; row?:string; label:string; onOpen:(el:HTMLButtonElement)=>void }) {
   return (
-    <div className="relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08] bg-[#0b0809]"
+    <button
+      type="button"
+      aria-label={label}
+      onClick={e => onOpen(e.currentTarget)}
+      className="nk-focus-ring group relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08] bg-[#0b0809] p-0 cursor-pointer text-left"
       style={{ gridColumn:col, gridRow:row }}>
       <div className="absolute inset-0 nk-shimmer" />
-      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
-        style={{ backgroundImage:`url('${url}')`, transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }}
-        onMouseEnter={e => (e.currentTarget.style.transform="scale(1.06)")}
-        onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")} />
-    </div>
+      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.06] group-focus-visible:scale-[1.06]"
+        style={{ backgroundImage:`url('${url}')`, transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }} />
+    </button>
   );
 }

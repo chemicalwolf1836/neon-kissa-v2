@@ -52,8 +52,23 @@
   animation:nkShimmer 1.6s ease-in-out 2;
   pointer-events:none;
 }
+@keyframes nkLightboxFade {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+.nk-lightbox-fade { animation:nkLightboxFade .18s ease both; }
+.nk-lightbox-pop   { animation:nkPop .22s ease both; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:.01ms!important; animation-iteration-count:1!important; }
+}
+
+/* ── FOCUS STATES ────────────────────────────────────── */
+:focus { outline:none; }
+:focus-visible,
+.nk-focus-ring:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  border-radius:6px;
 }
 
 /* ── GLOBAL ─────────────────────────────────────────── */
