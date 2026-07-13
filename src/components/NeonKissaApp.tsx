@@ -685,7 +685,7 @@ export function NeonKissaApp() {
             </a>
           </div>
           <div className="mt-[24px] md:mt-[30px]">
-            <span className="inline-flex items-center gap-2 dot text-[12px] md:text-[13px] tracking-[.08em] px-[12px] md:px-[14px] py-[7px] rounded-full"
+            <span className="inline-flex items-center gap-2 mono text-[11px] md:text-[12px] tracking-[.08em] px-[12px] md:px-[14px] py-[7px] rounded-full"
               style={{ color:"#cdc3bc", border:"1px solid rgba(255,255,255,.14)", background:"rgba(255,255,255,.03)" }}>
               <span className="w-[7px] h-[7px] rounded-full flex-shrink-0"
                 style={{ background:openDot, boxShadow:`0 0 8px ${openDot}`, animation:"nkPulse 2.4s infinite" }} />
@@ -1144,7 +1144,7 @@ function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; acc
   }[divider];
   return (
     <div className="flex items-start gap-4 md:gap-7 mb-8 md:mb-11">
-      <span className="dot text-[36px] md:text-[52px] leading-none flex-shrink-0" style={{ color:"transparent", WebkitTextStroke:`1px ${strokeColor}` }}>{num}</span>
+      <span className="mono text-[36px] md:text-[52px] leading-none font-bold flex-shrink-0" style={{ color:"transparent", WebkitTextStroke:`1px ${strokeColor}` }}>{num}</span>
       <div>
         <div className="w-12 md:w-16 h-px mb-[12px] md:mb-[14px]" style={{ background:dividerBg }} />
         <h2 className="m-0 font-black leading-[1.04]" style={{ fontSize:"clamp(24px,3.4vw,44px)" }}>

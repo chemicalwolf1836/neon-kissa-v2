@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Zen_Kaku_Gothic_New, Space_Mono, Space_Grotesk, DotGothic16 } from "next/font/google";
+import { Zen_Kaku_Gothic_New, Space_Mono } from "next/font/google";
 import "./globals.css";
 
 const zenKaku = Zen_Kaku_Gothic_New({
@@ -13,20 +13,6 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-space-mono",
-  display: "swap",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  weight: ["500", "700"],
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  display: "swap",
-});
-
-const dotGothic = DotGothic16({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-dot-gothic",
   display: "swap",
 });
 
@@ -94,7 +80,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${zenKaku.variable} ${spaceMono.variable} ${spaceGrotesk.variable} ${dotGothic.variable}`}>
+    <html lang="en" className={`${zenKaku.variable} ${spaceMono.variable}`}>
       <body>
         <script
           type="application/ld+json"
