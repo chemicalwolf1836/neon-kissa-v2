@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 
 interface AtmosphereLightboxProps {
   photos: string[];
@@ -62,10 +63,14 @@ export function AtmosphereLightbox({
       onClick={onClose}
     >
       <div ref={dialogRef} onClick={e => e.stopPropagation()} className="relative w-full h-full flex items-center justify-center">
-        <img
+        <Image
           src={photos[index]}
           alt=""
-          className="max-w-full max-h-full rounded-[12px] object-contain nk-lightbox-pop"
+          width={1600}
+          height={1067}
+          sizes="100vw"
+          priority
+          className="w-auto h-auto max-w-full max-h-full rounded-[12px] object-contain nk-lightbox-pop"
           style={{ boxShadow: "0 20px 70px rgba(0,0,0,.6), 0 0 40px color-mix(in srgb,var(--accent) 14%,transparent)" }}
         />
 

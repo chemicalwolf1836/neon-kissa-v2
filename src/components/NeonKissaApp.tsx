@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, type ReactElement } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, type ReactElement } from "react";
+import Image from "next/image";
 import { AtmosphereLightbox } from "./AtmosphereLightbox";
 
 /* ── CONFIG ──────────────────────────────────────────── */
@@ -38,7 +39,7 @@ function useReveal(threshold = 0.12) {
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
-  return { ref, visible };
+  return [ref, visible] as const;
 }
 
 /* ── GLASS SVGs ──────────────────────────────────────── */
@@ -221,6 +222,7 @@ const T = {
     chatLauncher:"Chat with Hana", chatPh:"Ask about cocktails, hours, or reservations…",
     chatSugg:["What's on tonight?","Best cocktail for me?","How do I get there?"],
     chatWelcome:"Irasshaimase! I'm Hana, your host at Neon Kissa. Ask me about cocktails, our hours, or finding a seat. ✦",
+    chatClose:"Close chat", chatSend:"Send message", aiDismiss:"Dismiss recommendation",
   },
   jp: {
     navMenu:"メニュー", navFinder:"カクテル", navAtmos:"雰囲気", navReserve:"予約", navAccess:"アクセス",
@@ -263,6 +265,7 @@ const T = {
     chatLauncher:"花に話しかける", chatPh:"カクテル・営業時間・予約についてお尋ねください…",
     chatSugg:["今夜は何がある？","私へのおすすめは？","行き方を教えて"],
     chatWelcome:"いらっしゃいませ！ネオン喫茶のホスト、花です。カクテル・営業時間・お席のことなど、何でもお尋ねください。✦",
+    chatClose:"チャットを閉じる", chatSend:"メッセージを送信", aiDismiss:"おすすめを閉じる",
   },
 };
 
@@ -352,15 +355,18 @@ export function NeonKissaApp() {
   }, []);
 
   /* Scroll-reveal refs */
-  const menuReveal    = useReveal();
-  const finderReveal  = useReveal();
-  const atmosReveal   = useReveal();
-  const reserveReveal = useReveal();
-  const accessReveal  = useReveal();
+  const [menuRef, menuVisible]       = useReveal();
+  const [finderRef, finderVisible]   = useReveal();
+  const [atmosRef, atmosVisible]     = useReveal();
+  const [reserveRef, reserveVisible] = useReveal();
+  const [accessRef, accessVisible]   = useReveal();
 
   const t = T[lang];
 
   useEffect(() => {
+    // SSR-safe client-only init: server renders defaults, client syncs from
+    // localStorage after hydration — setState here is the intended pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     try { const s = localStorage.getItem("nk-lang"); if (s === "en" || s === "jp") setLang(s as Lang); } catch {}
     try { const p = localStorage.getItem("nk-pal"); if (["ruby","cyber","amber","jade"].includes(p!)) setPalette(p as Palette); } catch {}
     // days since epoch → daily rotation; weeks → weekly theme switch
@@ -431,10 +437,10 @@ export function NeonKissaApp() {
   }, []);
 
   /* Derived: full ranked list, best match stays as before for Hana AI */
-  const rankedMatches = MENU
+  const rankedMatches = useMemo(() => MENU
     .map(it => ({ it, score: scoreItem(it, fMood, fSweet, fLikes, fAvoid) }))
-    .sort((a, b) => b.score - a.score);
-  const bestMatch = rankedMatches[0].it;
+    .sort((a, b) => b.score - a.score), [fMood, fSweet, fLikes, fAvoid]);
+  const bestMatch = useMemo(() => rankedMatches[0].it, [rankedMatches]);
 
   const askHanaAI = useCallback(async () => {
     setAiLoading(true);
@@ -646,8 +652,12 @@ export function NeonKissaApp() {
       </header>
 
       {/* ── HERO ────────────────────────────────────── */}
-      <section id="top" className="relative min-h-[85vh] md:min-h-[90vh] flex items-end bg-cover bg-center"
-        style={{ backgroundImage:`linear-gradient(90deg,rgba(11,8,9,.96) 0%,rgba(11,8,9,.78) 32%,rgba(11,8,9,.32) 70%,rgba(11,8,9,.55) 100%),linear-gradient(0deg,#0b0809 2%,rgba(11,8,9,.05) 48%),url('${heroUrl}')` }}>
+      <section id="top" className="relative min-h-[85vh] md:min-h-[90vh] flex items-end overflow-hidden">
+        {heroUrl && (
+          <Image src={heroUrl} alt="" fill priority sizes="100vw" className="object-cover" />
+        )}
+        <div aria-hidden className="absolute inset-0"
+          style={{ background:"linear-gradient(90deg,rgba(11,8,9,.96) 0%,rgba(11,8,9,.78) 32%,rgba(11,8,9,.32) 70%,rgba(11,8,9,.55) 100%),linear-gradient(0deg,#0b0809 2%,rgba(11,8,9,.05) 48%)" }} />
         <p aria-hidden className="absolute top-[120px] right-[42px] hidden lg:block"
           style={{ writingMode:"vertical-rl", fontSize:13, letterSpacing:".5em", color:"rgba(255,255,255,.24)" }}>
           新宿の夜にともる、ひとつの灯
@@ -706,15 +716,18 @@ export function NeonKissaApp() {
 
       {/* ── MENU ────────────────────────────────────── */}
       <section id="menu"
-        ref={menuReveal.ref as React.RefObject<HTMLElement>}
-        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[40px] nk-reveal${menuReveal.visible?" is-visible":""}`}
+        ref={menuRef as React.RefObject<HTMLElement>}
+        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[40px] nk-reveal${menuVisible?" is-visible":""}`}
         style={{ scrollMarginTop:68 }}>
         <SectionHead num="01" accent="accent" divider="normal" title={t.menuTitle} jp="献立" sub={t.menuSub} />
 
         {/* Featured — stacks on mobile, side-by-side on md+ */}
         <div className="grid grid-cols-1 md:grid-cols-[.9fr_1.1fr] border border-white/10 rounded-[18px] overflow-hidden mb-[24px] md:mb-[30px] bg-white/[.02]">
-          <div className="relative h-[200px] md:min-h-[300px] md:h-auto bg-cover bg-center overflow-hidden"
-            style={{ backgroundImage:`linear-gradient(0deg,rgba(11,8,9,.5),rgba(11,8,9,.02)),url('${usp(featImg || "photo-1514362545857-3bc16c4c7d1b", 1400)}')` }}>
+          <div className="relative h-[200px] md:min-h-[300px] md:h-auto overflow-hidden">
+            <Image src={usp(featImg || "photo-1514362545857-3bc16c4c7d1b", 1400)} alt=""
+              fill sizes="(max-width: 768px) 100vw, 45vw" className="object-cover" />
+            <div aria-hidden className="absolute inset-0"
+              style={{ background:"linear-gradient(0deg,rgba(11,8,9,.5),rgba(11,8,9,.02))" }} />
             <span className="absolute top-[14px] left-[14px] md:top-[18px] md:left-[18px] mono text-[11px] tracking-[.18em] text-white px-3 py-[7px] rounded-[6px]"
               style={{ background:"color-mix(in srgb,var(--accent) 90%,transparent)" }}>{t.featLabel}</span>
           </div>
@@ -762,8 +775,8 @@ export function NeonKissaApp() {
 
       {/* ── FINDER ──────────────────────────────────── */}
       <section id="finder"
-        ref={finderReveal.ref as React.RefObject<HTMLElement>}
-        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px] nk-reveal${finderReveal.visible?" is-visible":""}`}
+        ref={finderRef as React.RefObject<HTMLElement>}
+        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px] nk-reveal${finderVisible?" is-visible":""}`}
         style={{ scrollMarginTop:68 }}>
         <SectionHead num="02" accent="accent2" divider="dual" title={t.finderTitle} jp="一杯を探す" sub={t.finderSub} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[18px] md:gap-[22px] items-stretch">
@@ -813,7 +826,7 @@ export function NeonKissaApp() {
               <div className="mt-[14px] rounded-[12px] p-[14px_16px]" style={{ border:"1px solid color-mix(in srgb,var(--accent2) 28%,transparent)", background:"color-mix(in srgb,var(--accent2) 8%,transparent)", animation:"nkPop .3s ease both" }}>
                 <div className="flex items-center justify-between mb-[6px]">
                   <span className="mono text-[11px]" style={{ color:"#c79bff" }}>{t.aiPickLabel}</span>
-                  <button onClick={() => setAiRec(null)} className="bg-transparent border-none text-[13px] cursor-pointer leading-none p-[2px]" style={{ color:"#8a7f78" }}>✕</button>
+                  <button onClick={() => setAiRec(null)} aria-label={t.aiDismiss} className="bg-transparent border-none text-[13px] cursor-pointer leading-none p-[2px]" style={{ color:"#8a7f78" }}>✕</button>
                 </div>
                 <p className="m-0 font-bold text-[15px] text-white">{aiRec.name}</p>
                 <p className="mt-1 text-[13px] leading-[1.5]" style={{ color:"var(--subtle)" }}>{aiRec.reason}</p>
@@ -854,8 +867,8 @@ export function NeonKissaApp() {
 
       {/* ── ATMOSPHERE ──────────────────────────────── */}
       <section id="atmosphere"
-        ref={atmosReveal.ref as React.RefObject<HTMLElement>}
-        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px] nk-reveal${atmosReveal.visible?" is-visible":""}`}
+        ref={atmosRef as React.RefObject<HTMLElement>}
+        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px] nk-reveal${atmosVisible?" is-visible":""}`}
         style={{ scrollMarginTop:68 }}>
         <SectionHead num="03" accent="accent2" divider="dual" title={t.atmosTitle} jp="雰囲気" sub={t.atmosSub} />
 
@@ -895,8 +908,8 @@ export function NeonKissaApp() {
 
       {/* ── RESERVE ─────────────────────────────────── */}
       <section id="reserve"
-        ref={reserveReveal.ref as React.RefObject<HTMLElement>}
-        className={`border-t border-b border-white/[.07] bg-white/[.015] nk-reveal${reserveReveal.visible?" is-visible":""}`}
+        ref={reserveRef as React.RefObject<HTMLElement>}
+        className={`border-t border-b border-white/[.07] bg-white/[.015] nk-reveal${reserveVisible?" is-visible":""}`}
         style={{ scrollMarginTop:68 }}>
         <div className="max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[104px] pb-[64px] md:pb-[104px]">
           <SectionHead num="04" accent="green" divider="green" title={t.reserveTitle} jp="予約" sub={t.reserveSub} />
@@ -956,8 +969,8 @@ export function NeonKissaApp() {
 
       {/* ── ACCESS ──────────────────────────────────── */}
       <section id="access"
-        ref={accessReveal.ref as React.RefObject<HTMLElement>}
-        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[90px] pb-[48px] md:pb-[60px] nk-reveal${accessReveal.visible?" is-visible":""}`}
+        ref={accessRef as React.RefObject<HTMLElement>}
+        className={`max-w-[1240px] mx-auto px-4 sm:px-8 pt-[64px] md:pt-[90px] pb-[48px] md:pb-[60px] nk-reveal${accessVisible?" is-visible":""}`}
         style={{ scrollMarginTop:68 }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[32px] md:gap-[48px] items-center">
           <div>
@@ -1036,6 +1049,8 @@ export function NeonKissaApp() {
       <div className="fixed right-[14px] md:right-[22px] bottom-[14px] md:bottom-[22px] z-[80] flex flex-col items-end gap-[12px] md:gap-[14px]">
         {chatOpen && (
           <div
+            role="dialog"
+            aria-label={t.hanaName}
             className="flex flex-col rounded-[18px] md:rounded-[20px] overflow-hidden"
             style={{
               width: isMobile ? "calc(100vw - 28px)" : "368px",
@@ -1057,7 +1072,7 @@ export function NeonKissaApp() {
                 </div>
                 <div className="text-[11px]" style={{ color:"#8a7f78" }}>{t.hanaRole}</div>
               </div>
-              <button onClick={() => setChatOpen(false)} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer" style={{ color:"#8a7f78" }}>✕</button>
+              <button onClick={() => setChatOpen(false)} aria-label={t.chatClose} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer" style={{ color:"#8a7f78" }}>✕</button>
             </div>
 
             <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-[14px] md:p-[18px] flex flex-col gap-[10px] md:gap-[11px]">
@@ -1097,7 +1112,7 @@ export function NeonKissaApp() {
                 value={chatInput} onChange={e => setChatInput(e.target.value)}
                 onKeyDown={e => e.key==="Enter" && sendChat(chatInput)}
                 placeholder={t.chatPh} />
-              <button onClick={() => sendChat(chatInput)}
+              <button onClick={() => sendChat(chatInput)} aria-label={t.chatSend}
                 className="w-[44px] rounded-[12px] border-none text-white text-[17px] flex-shrink-0 cursor-pointer transition-all hover:brightness-110 active:scale-95"
                 style={{ background:"var(--accent)", boxShadow:"0 0 16px color-mix(in srgb,var(--accent) 40%,transparent)" }}>→</button>
             </div>
@@ -1169,8 +1184,9 @@ function AtmosTile({ url, col, row, label, onOpen }: { url:string; col?:string; 
       className="nk-focus-ring group relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08] bg-[#0b0809] p-0 cursor-pointer text-left"
       style={{ gridColumn:col, gridRow:row }}>
       <div className="absolute inset-0 nk-shimmer" />
-      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.06] group-focus-visible:scale-[1.06]"
-        style={{ backgroundImage:`url('${url}')`, transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }} />
+      <Image src={url} alt="" fill sizes="(max-width: 768px) 50vw, 25vw"
+        className="object-cover transition-transform duration-700 group-hover:scale-[1.06] group-focus-visible:scale-[1.06]"
+        style={{ transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }} />
     </button>
   );
 }
