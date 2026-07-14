@@ -570,7 +570,7 @@ export function NeonKissaApp() {
           </a>
 
           {/* Desktop nav — with active scroll-spy highlight */}
-          <nav className="hidden md:flex items-center gap-[30px] text-[13px] tracking-[.05em]">
+          <nav className="hidden md:flex items-center gap-[30px] mono text-[11.5px] tracking-[.12em] uppercase">
             {NAV_KEYS.map((k, i) => {
               const isActive = activeSection === NAV_IDS[i];
               return (
@@ -608,8 +608,8 @@ export function NeonKissaApp() {
             </div>
             {/* Reserve button — hidden on mobile */}
             <a href="#reserve"
-              className="hidden sm:inline-flex items-center justify-center ml-[8px] mono text-[12px] tracking-[.14em] no-underline px-5 py-[9px] rounded-full transition-all"
-              style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 40%,transparent)", background:"color-mix(in srgb,var(--accent) 8%,transparent)" }}>
+              className="hidden sm:inline-flex items-center justify-center ml-[8px] mono text-[11.5px] tracking-[.16em] uppercase font-bold no-underline px-5 py-[9px] rounded-full transition-all hover:brightness-110 hover:-translate-y-[1px] active:scale-95"
+              style={{ color:"#0b0809", border:"1px solid transparent", background:"var(--accent)", boxShadow:"0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)" }}>
               {t.navReserve}
             </a>
             {/* Hamburger — mobile only */}
@@ -633,7 +633,7 @@ export function NeonKissaApp() {
               const isActive = activeSection === NAV_IDS[i];
               return (
                 <a key={k} href={NAV_LINKS[i]} onClick={() => setNavOpen(false)}
-                  className="flex items-center px-5 py-[15px] text-[15px] tracking-[.03em] no-underline border-b border-white/[.06] transition-colors hover:bg-white/[.04]"
+                  className="flex items-center px-5 py-[15px] mono text-[13px] tracking-[.1em] uppercase no-underline border-b border-white/[.06] transition-colors hover:bg-white/[.04]"
                   style={{ color: isActive ? "var(--accent-text)" : "var(--subtle)" }}>
                   <span className="flex-1">{t[k]}</span>
                   <span className="mono text-[11px]" style={{ color:"var(--accent-text)" }}>→</span>
@@ -642,8 +642,8 @@ export function NeonKissaApp() {
             })}
             <div className="px-5 py-4">
               <a href="#reserve" onClick={() => setNavOpen(false)}
-                className="block w-full text-center mono text-[13px] tracking-[.1em] no-underline px-4 py-[12px] rounded-full"
-                style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 40%,transparent)", background:"color-mix(in srgb,var(--accent) 8%,transparent)" }}>
+                className="block w-full text-center mono text-[13px] tracking-[.14em] uppercase font-bold no-underline px-4 py-[12px] rounded-full"
+                style={{ color:"#0b0809", border:"1px solid transparent", background:"var(--accent)", boxShadow:"0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)" }}>
                 {t.navReserve}
               </a>
             </div>
