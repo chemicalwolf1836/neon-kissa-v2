@@ -88,7 +88,7 @@ body {
 ::-webkit-scrollbar-thumb:hover { background:color-mix(in srgb,var(--accent) 50%,transparent); background-clip:padding-box; }
 
 /* ── REUSABLE CLASSES ───────────────────────────────── */
-.mono { font-family:var(--font-space-mono, 'Space Mono', monospace); }
+.mono { font-family:var(--font-mono, 'JetBrains Mono', monospace); }
 .nk-accent-color  { color:var(--accent); }
 .nk-accent-text   { color:var(--accent-text); }
 .nk-muted         { color:var(--muted); }

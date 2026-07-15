@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Zen_Kaku_Gothic_New, Space_Mono } from "next/font/google";
+import { Zen_Kaku_Gothic_New, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const zenKaku = Zen_Kaku_Gothic_New({
@@ -9,10 +9,10 @@ const zenKaku = Zen_Kaku_Gothic_New({
   display: "swap",
 });
 
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
+const jetbrainsMono = JetBrains_Mono({
+  weight: ["400", "500", "700"],
   subsets: ["latin"],
-  variable: "--font-space-mono",
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -80,7 +80,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${zenKaku.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${zenKaku.variable} ${jetbrainsMono.variable}`}>
       <body>
         <script
           type="application/ld+json"

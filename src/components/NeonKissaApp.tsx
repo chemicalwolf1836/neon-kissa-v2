@@ -86,7 +86,7 @@ const MENU: MenuItem[] = [
 const usp = (id: string, w: number) =>
   `https://images.unsplash.com/${id}?fm=jpg&q=80&w=${w}&auto=format&fit=crop`;
 
-/* ── HERO POOL (14 IDs — rotates daily, new image every day) ── */
+/* ── HERO POOL (14 IDs - rotates daily, new image every day) ── */
 const HERO_POOL = [
   "photo-1683744129482-2cdd6645ed29",
   "photo-1610515660473-c11d4f3f7d37",
@@ -108,7 +108,7 @@ const HERO_POOL = [
    Theme switches every week; within the week a 7-photo
    window slides forward one step each day for daily variety. ── */
 const ATMOS_POOL: string[][] = [
-  /* Set 0 — dim & intimate: counters, candlelit glassware, dark wood */
+  /* Set 0 - dim & intimate: counters, candlelit glassware, dark wood */
   [
     "photo-1772311698901-fe3fa07141be",
     "photo-1778104959337-5260c89e2293",
@@ -125,7 +125,7 @@ const ATMOS_POOL: string[][] = [
     "photo-1671053807715-675fa581f103",
     "photo-1638884896143-f1b2501e9a61",
   ],
-  /* Set 1 — warm craft: cocktail pours, citrus, copper, amber liquid */
+  /* Set 1 - warm craft: cocktail pours, citrus, copper, amber liquid */
   [
     "photo-1607622750671-6cd9a99eabd1",
     "photo-1566417713940-fe7c737a9ef2",
@@ -142,7 +142,7 @@ const ATMOS_POOL: string[][] = [
     "photo-1655917102337-576d921c297d",
     "photo-1615887023516-9b6bcd559e87",
   ],
-  /* Set 2 — neon & Tokyo: neon signs, rain-wet streets, kanji, night exterior */
+  /* Set 2 - neon & Tokyo: neon signs, rain-wet streets, kanji, night exterior */
   [
     "photo-1534214526114-0ea4d47b04f2",
     "photo-1551641506-ee5bf4cb45f1",
@@ -161,7 +161,7 @@ const ATMOS_POOL: string[][] = [
   ],
 ];
 
-/* ── FEATURED COCKTAIL POOL (14 IDs — rotates daily) ── */
+/* ── FEATURED COCKTAIL POOL (14 IDs - rotates daily) ── */
 const FEAT_POOL = [
   "photo-1759358342214-c23ed81014bc",
   "photo-1701722952679-beffce26d77a",
@@ -191,37 +191,37 @@ const T = {
     openLabel:"OPEN NOW · 18:00–03:00",
     openOpen:"OPEN NOW · until 03:00", openClosed:"OPENS TONIGHT · 18:00",
     rating:"4.9 / 5", reviews:"120+ guest reviews",
-    badges:["English-friendly","Tourist approved","Cashless OK","Open till 3am"],
-    menuTitle:"Signature Menu", menuSub:"A short, well-made list — easy to read, made to be remembered.",
-    featLabel:"TONIGHT'S PICK",
-    featDesc:"Gin, yuzu and tonic lifted with floral bitters — bright, fragrant, and unmistakably Shinjuku.",
+    badges:["English-friendly","Tourist approved","Cashless OK","Open till 03:00"],
+    menuTitle:"Signature Menu", menuSub:"A short, well-made list - easy to read, made to be remembered.",
+    featLabel:"TONIGHT’S PICK",
+    featDesc:"Gin, yuzu and tonic lifted with floral bitters - bright, fragrant, and unmistakably Shinjuku.",
     featNote:"house favourite",
     menuNote:"Allergy information available on request.",
-    finderTitle:"Find Your Cocktail", finderSub:"Tell us the mood — our bartender will point you to the right glass.",
+    finderTitle:"Find Your Cocktail", finderSub:"Tell us the mood - our bartender will point you to the right glass.",
     fMood:"MOOD", fSweet:"SWEETNESS", fLikesLbl:"FLAVOURS YOU LIKE", fLikesPh:"citrus, floral",
     fAvoidLbl:"ANYTHING TO AVOID", fAvoidPh:"bitter, smoky",
-    bestLabel:"Best match", rankLabel:"Also consider", askAI:"Ask Hana AI", aiPickLabel:"✦ Hana's pick",
+    bestLabel:"Best match", rankLabel:"Also consider", askAI:"Ask Hana AI", aiPickLabel:"✦ Hana’s pick",
     finderTip:"Your best match updates live as you choose. Tap Ask Hana AI for a personal suggestion.",
     moodOpts:[{v:"after-work",l:"After-work"},{v:"chill",l:"Chill"},{v:"romantic",l:"Romantic"},{v:"party",l:"Party"}] as {v:string;l:string}[],
     sweetOpts:[{v:"any",l:"Any"},{v:"dry",l:"Dry"},{v:"balanced",l:"Balanced"},{v:"sweet",l:"Sweet"}] as {v:string;l:string}[],
-    atmosTitle:"The Atmosphere", atmosSub:"A red-lit counter tucked off the main street — see the vibe before you visit.",
+    atmosTitle:"The Atmosphere", atmosSub:"A red-lit counter tucked off the main street - see the vibe before you visit.",
     atmosView:"View photo", lightboxClose:"Close photo", lightboxPrev:"Previous photo", lightboxNext:"Next photo",
-    reserveTitle:"Reservations", reserveSub:"A quick request — we confirm by email within 24 hours.",
+    reserveTitle:"Reservations", reserveSub:"A quick request - we confirm by email within 24 hours.",
     fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
-    fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We'll reply by email within 24 hours. Walk-ins also welcome.",
+    fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We’ll reply by email within 24 hours. Walk-ins also welcome.",
     fError:"Submission failed. Please try again.",
-    sentTitle:"Request received", sentMsg:"We'll confirm your booking by email within 24 hours. See you soon.",
+    sentTitle:"Request received", sentMsg:"We’ll confirm your booking by email within 24 hours. See you soon.",
     again:"Make another request", planLabel:"PLAN YOUR NIGHT",
     planRows:[{k:"Hours",v:"Daily 18:00–03:00"},{k:"Last entry",v:"02:00"},{k:"Walk-ins",v:"Always welcome"},{k:"Cover charge",v:"None"},{k:"Payment",v:"Cash & card"}],
     askHost:"Ask Hana about your visit",
     accessTitle:"Find Us", addrLabel:"ADDRESS", addr:"2-2-1 Kabukicho, Shinjuku-ku, Tokyo",
     hoursLabel:"HOURS", hours:"Daily 18:00–03:00 · Last entry 02:00", phoneLabel:"PHONE",
     mapsBtn:"Open in Google Maps",
-    footer:"© 2024 Neon Kissa · Shinjuku, Tokyo",
+    footer:"© 2026 Neon Kissa · Shinjuku, Tokyo",
     hanaName:"Hana", hanaRole:"Virtual host at Neon Kissa",
     chatLauncher:"Chat with Hana", chatPh:"Ask about cocktails, hours, or reservations…",
-    chatSugg:["What's on tonight?","Best cocktail for me?","How do I get there?"],
-    chatWelcome:"Irasshaimase! I'm Hana, your host at Neon Kissa. Ask me about cocktails, our hours, or finding a seat. ✦",
+    chatSugg:["What’s on tonight?","Best cocktail for me?","How do I get there?"],
+    chatWelcome:"Irasshaimase! I’m Hana, your host at Neon Kissa. Ask me about cocktails, our hours, or finding a seat. ✦",
     chatClose:"Close chat", chatSend:"Send message", aiDismiss:"Dismiss recommendation",
   },
   jp: {
@@ -235,9 +235,9 @@ const T = {
     openOpen:"営業中 · 03:00まで", openClosed:"本日 18:00 オープン",
     rating:"4.9 / 5", reviews:"120件以上のレビュー",
     badges:["英語対応","観光客に人気","キャッシュレスOK","深夜3時まで"],
-    menuTitle:"シグネチャーメニュー", menuSub:"厳選された短いリスト — 読みやすく、記憶に残る。",
+    menuTitle:"シグネチャーメニュー", menuSub:"厳選された短いリスト - 読みやすく、記憶に残る。",
     featLabel:"今夜のおすすめ",
-    featDesc:"ジン、ゆず、トニックにフローラルビターズ — 明るく、香り高く、新宿らしい一杯。",
+    featDesc:"ジン、ゆず、トニックにフローラルビターズ - 明るく、香り高く、新宿らしい一杯。",
     featNote:"ハウスフェイバリット",
     menuNote:"アレルギー情報はご要望に応じてご提供します。",
     finderTitle:"カクテルを探す", finderSub:"気分を教えてください。バーテンダーが最適なグラスをご案内します。",
@@ -247,9 +247,9 @@ const T = {
     finderTip:"リアルタイムで更新されます。花AIにパーソナル提案を聞いてみましょう。",
     moodOpts:[{v:"after-work",l:"仕事帰り"},{v:"chill",l:"リラックス"},{v:"romantic",l:"デート"},{v:"party",l:"盛り上がり"}] as {v:string;l:string}[],
     sweetOpts:[{v:"any",l:"指定なし"},{v:"dry",l:"ドライ"},{v:"balanced",l:"バランス"},{v:"sweet",l:"甘め"}] as {v:string;l:string}[],
-    atmosTitle:"雰囲気", atmosSub:"大通りを外れた赤いカウンター — 訪れる前に雰囲気を感じてください。",
+    atmosTitle:"雰囲気", atmosSub:"大通りを外れた赤いカウンター - 訪れる前に雰囲気を感じてください。",
     atmosView:"写真を見る", lightboxClose:"写真を閉じる", lightboxPrev:"前の写真", lightboxNext:"次の写真",
-    reserveTitle:"予約", reserveSub:"簡単なリクエスト — 24時間以内にメールで確認します。",
+    reserveTitle:"予約", reserveSub:"簡単なリクエスト - 24時間以内にメールで確認します。",
     fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
     fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fSending:"送信中…", fHint:"24時間以内にメールにてご返信いたします。",
     fError:"送信に失敗しました。再度お試しください。",
@@ -260,7 +260,7 @@ const T = {
     accessTitle:"アクセス", addrLabel:"住所", addr:"東京都新宿区歌舞伎町2-2-1",
     hoursLabel:"営業時間", hours:"毎日18:00〜03:00・最終入場02:00", phoneLabel:"電話",
     mapsBtn:"Googleマップで開く",
-    footer:"© 2024 ネオン喫茶・東京都新宿区",
+    footer:"© 2026 ネオン喫茶・東京都新宿区",
     hanaName:"花", hanaRole:"ネオン喫茶のバーチャルホスト",
     chatLauncher:"花に話しかける", chatPh:"カクテル・営業時間・予約についてお尋ねください…",
     chatSugg:["今夜は何がある？","私へのおすすめは？","行き方を教えて"],
@@ -292,26 +292,26 @@ function hanaResponse(q: string, lang: Lang): string {
   const text = q.toLowerCase();
   const jp = lang === "jp";
   if (/hours?|open|clos|time|営業|開|閉/.test(text))
-    return jp ? "毎日18時から深夜3時まで営業しています。最終入場は2時です。✦" : "We're open daily 18:00–03:00, last entry 02:00. ✦";
+    return jp ? "毎日18時から深夜3時まで営業しています。最終入場は2時です。✦" : "We’re open daily 18:00–03:00, last entry 02:00. ✦";
   if (/address|where|location|direction|access|map|how.*get|find|住所|場所|アクセス|行き方|駅/.test(text))
-    return jp ? "新宿区歌舞伎町にあります。新宿駅東口から徒歩5分です。✦" : "We're in Kabukicho, Shinjuku — 5 min walk from Shinjuku Station east exit. ✦";
+    return jp ? "新宿区歌舞伎町にあります。新宿駅東口から徒歩5分です。✦" : "We’re in Kabukicho, Shinjuku - 5 min walk from Shinjuku Station east exit. ✦";
   if (/reserv|book|seat|table|予約|席|テーブル/.test(text))
-    return jp ? "ページ上の予約フォームからリクエストいただけます。24時間以内にメールで確認します。✦" : "Use the Reserve form on this page — we confirm by email within 24 hours. Walk-ins welcome too! ✦";
+    return jp ? "ページ上の予約フォームからリクエストいただけます。24時間以内にメールで確認します。✦" : "Use the Reserve form on this page - we confirm by email within 24 hours. Walk-ins welcome too! ✦";
   if (/menu|cocktail|drink|whiskey|gin|vodka|umeshu|beer|メニュー|カクテル|飲|ウイスキー|梅酒/.test(text))
     return jp ? "シグネチャーカクテルは4種：ネオン・ハイボール¥1,200、新宿ブルーム¥1,600、ミッドナイト梅¥1,400、サイバー・エスプレッソ¥1,700。✦" : "Four cocktails: Neon Highball ¥1,200, Shinjuku Bloom ¥1,600, Midnight Ume ¥1,400, Cyber Espresso ¥1,700. ✦";
   if (/price|cost|how much|¥|値段|料金|いくら/.test(text))
     return jp ? "カクテルは¥1,200〜¥1,700。カバーチャージなし。✦" : "Cocktails are ¥1,200–¥1,700. No cover charge. ✦";
   if (/english|speak|language|英語/.test(text))
-    return jp ? "英語対応スタッフがおります。お気軽にどうぞ。✦" : "Yes — English-friendly staff here, feel right at home! ✦";
+    return jp ? "英語対応スタッフがおります。お気軽にどうぞ。✦" : "Yes - English-friendly staff here, feel right at home! ✦";
   if (/cash|card|pay|cashless|支払|現金|クレジット/.test(text))
     return jp ? "現金・カード両方OK。キャッシュレスも対応。✦" : "Both cash and card accepted. Cashless is fine too. ✦";
   if (/recommend|suggest|best|what should|おすすめ|何がいい/.test(text))
-    return jp ? "カクテルファインダーで気分を選ぶとおすすめが表示されます！✦" : "Try the Cocktail Finder above — pick your mood and I'll point you to the perfect glass! ✦";
+    return jp ? "カクテルファインダーで気分を選ぶとおすすめが表示されます！✦" : "Try the Cocktail Finder above - pick your mood and I’ll point you to the perfect glass! ✦";
   if (/hello|hi|hey|こんにちは|いらっしゃい/.test(text))
     return jp ? "いらっしゃいませ！何かお手伝いできますか？✦" : "Irasshaimase! How can I make your evening perfect? ✦";
   return jp
     ? "もう少し詳しく教えていただけますか？カクテル、予約、場所などについてお答えします。✦"
-    : "For full details visit us or use the Reserve form — our team will take care of you. ✦";
+    : "For full details visit us or use the Reserve form - our team will take care of you. ✦";
 }
 
 /* ── MAIN APP ────────────────────────────────────────── */
@@ -365,7 +365,7 @@ export function NeonKissaApp() {
 
   useEffect(() => {
     // SSR-safe client-only init: server renders defaults, client syncs from
-    // localStorage after hydration — setState here is the intended pattern.
+    // localStorage after hydration - setState here is the intended pattern.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     try { const s = localStorage.getItem("nk-lang"); if (s === "en" || s === "jp") setLang(s as Lang); } catch {}
     try { const p = localStorage.getItem("nk-pal"); if (["ruby","cyber","amber","jade"].includes(p!)) setPalette(p as Palette); } catch {}
@@ -458,7 +458,7 @@ export function NeonKissaApp() {
       const data = await res.json();
       setAiRec({ name: d.name, reason: data.reply ?? (lang === "jp" ? "今夜ぴったりの一杯です。✦" : "A perfect match for tonight. ✦") });
     } catch {
-      setAiRec({ name: d.name, reason: lang === "jp" ? "今の気分にぴったりの一杯です。✦" : "This one matches your mood perfectly — great choice for tonight. ✦" });
+      setAiRec({ name: d.name, reason: lang === "jp" ? "今の気分にぴったりの一杯です。✦" : "This one matches your mood perfectly - great choice for tonight. ✦" });
     }
     setAiLoading(false);
   }, [bestMatch, lang, fMood, fSweet, fLikes]);
@@ -534,6 +534,8 @@ export function NeonKissaApp() {
   ];
 
   const inputCls = "w-full bg-black/35 border border-white/10 rounded-[10px] px-[13px] py-[11px] text-white text-sm font-[inherit] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]";
+  // Shared form-field label style - matches the finder's uppercase-mono labels
+  const fieldLabelCls = "mono text-[11px] tracking-[.16em] uppercase";
   const NAV_LINKS = ["#menu","#finder","#atmosphere","#reserve","#access"] as const;
   const NAV_KEYS  = ["navMenu","navFinder","navAtmos","navReserve","navAccess"] as const;
   const NAV_IDS   = ["menu","finder","atmosphere","reserve","access"] as const;
@@ -569,7 +571,7 @@ export function NeonKissaApp() {
             <span className="hidden sm:inline text-[12px] tracking-[.12em]" style={{ color:"#8a7f78" }}>ネオン喫茶</span>
           </a>
 
-          {/* Desktop nav — with active scroll-spy highlight */}
+          {/* Desktop nav - with active scroll-spy highlight */}
           <nav className="hidden md:flex items-center gap-[30px] mono text-[11.5px] tracking-[.12em] uppercase">
             {NAV_KEYS.map((k, i) => {
               const isActive = activeSection === NAV_IDS[i];
@@ -606,13 +608,13 @@ export function NeonKissaApp() {
                 </button>
               ))}
             </div>
-            {/* Reserve button — hidden on mobile */}
+            {/* Reserve button - hidden on mobile */}
             <a href="#reserve"
               className="hidden sm:inline-flex items-center justify-center ml-[8px] mono text-[11.5px] tracking-[.16em] uppercase font-bold no-underline px-5 py-[9px] rounded-full transition-all hover:brightness-110 hover:-translate-y-[1px] active:scale-95"
               style={{ color:"#0b0809", border:"1px solid transparent", background:"var(--accent)", boxShadow:"0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)" }}>
               {t.navReserve}
             </a>
-            {/* Hamburger — mobile only */}
+            {/* Hamburger - mobile only */}
             <button
               onClick={e => { e.stopPropagation(); setNavOpen(o => !o); }}
               aria-label="Toggle navigation"
@@ -707,7 +709,7 @@ export function NeonKissaApp() {
           </div>
           <div className="flex flex-wrap gap-[8px] md:gap-[10px]">
             {t.badges.map(b => (
-              <span key={b} className="mono text-[10px] md:text-[11px] tracking-[.06em] px-[11px] md:px-[13px] py-[6px] md:py-[7px] rounded-[6px]"
+              <span key={b} className="mono text-[10px] md:text-[11px] tracking-[.1em] uppercase px-[11px] md:px-[13px] py-[6px] md:py-[7px] rounded-[6px]"
                 style={{ color:"var(--subtle)", border:"1px solid rgba(255,255,255,.12)" }}>{b}</span>
             ))}
           </div>
@@ -721,7 +723,7 @@ export function NeonKissaApp() {
         style={{ scrollMarginTop:68 }}>
         <SectionHead num="01" accent="accent" divider="normal" title={t.menuTitle} jp="献立" sub={t.menuSub} />
 
-        {/* Featured — stacks on mobile, side-by-side on md+ */}
+        {/* Featured - stacks on mobile, side-by-side on md+ */}
         <div className="grid grid-cols-1 md:grid-cols-[.9fr_1.1fr] border border-white/10 rounded-[18px] overflow-hidden mb-[24px] md:mb-[30px] bg-white/[.02]">
           <div className="relative h-[200px] md:min-h-[300px] md:h-auto overflow-hidden">
             <Image src={usp(featImg || "photo-1514362545857-3bc16c4c7d1b", 1400)} alt=""
@@ -740,7 +742,7 @@ export function NeonKissaApp() {
             <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
             <div className="mt-[18px] md:mt-[22px] flex items-center gap-[18px]">
               <span className="mono text-[20px] md:text-[22px]" style={{ color:"var(--accent)" }}>¥1,600</span>
-              <span className="text-[12px] italic" style={{ color:"#8a7f78" }}>{t.featNote}</span>
+              <span className="mono text-[10px] tracking-[.1em] uppercase" style={{ color:"#8a7f78" }}>{t.featNote}</span>
             </div>
           </div>
         </div>
@@ -762,7 +764,7 @@ export function NeonKissaApp() {
                       <p className="m-0 font-bold text-[16px] md:text-[17px]">{d.name}</p>
                       <span className="mono text-[11px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
                     </div>
-                    <p className="mt-[6px] md:mt-2 text-[13px] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+                    <p className="mt-[6px] md:mt-2 mono text-[12px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
                   </div>
                 </div>
                 <p className="m-0 mono text-[16px] md:text-[17px] mt-auto pt-[10px]" style={{ color:"var(--accent)" }}>{item.price}</p>
@@ -784,9 +786,9 @@ export function NeonKissaApp() {
           <div className="border border-white/10 rounded-[18px] p-[22px] md:p-[30px] bg-white/[.025]">
             <FilterGroup label={t.fMood} options={t.moodOpts} value={fMood} onChange={setFMood} />
             <FilterGroup label={t.fSweet} options={t.sweetOpts} value={fSweet} onChange={setFSweet} />
-            <p className="m-0 mb-[10px] text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{t.fLikesLbl}</p>
+            <p className="m-0 mb-[10px] mono text-[11px] tracking-[.16em] uppercase" style={{ color:"#8a7f78" }}>{t.fLikesLbl}</p>
             <input className={inputCls} style={{ marginBottom:16 }} placeholder={t.fLikesPh} value={fLikes} onChange={e => setFLikes(e.target.value)} />
-            <p className="m-0 mb-2 text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{t.fAvoidLbl}</p>
+            <p className="m-0 mb-2 mono text-[11px] tracking-[.16em] uppercase" style={{ color:"#8a7f78" }}>{t.fAvoidLbl}</p>
             <input className={inputCls} placeholder={t.fAvoidPh} value={fAvoid} onChange={e => setFAvoid(e.target.value)} />
             <p className="mt-[16px] md:mt-[18px] text-[12px] leading-[1.5]" style={{ color:"#6f655e" }}>{t.finderTip}</p>
           </div>
@@ -805,13 +807,13 @@ export function NeonKissaApp() {
                   <h3 className="m-0 font-extrabold text-[20px] md:text-[22px]">{(lang==="jp"?bestMatch.jp:bestMatch.en).name}</h3>
                   <span className="mono text-[12px] md:text-[13px]" style={{ color:"#8a7f78" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).jp}</span>
                 </div>
-                <p className="mt-2 text-[13px] md:text-[14px] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
-                <p className="mt-2 text-[12px]" style={{ color:"#8a7f78" }}>
+                <p className="mt-2 mono text-[12px] md:text-[13px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
+                <p className="mt-2 mono text-[11px] tracking-[.03em]" style={{ color:"#8a7f78" }}>
                   {(baseLabel[bestMatch.base]||{})[lang]||bestMatch.base} · {(sweetLabel[bestMatch.sweetness]||{})[lang]||bestMatch.sweetness}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-[7px]">
                   {bestMatch.tags.map(tag => (
-                    <span key={tag} className="text-[11px] px-[10px] py-1 rounded-full"
+                    <span key={tag} className="mono text-[10px] tracking-[.08em] uppercase px-[10px] py-1 rounded-full"
                       style={{ color:"#8fd9ff", border:"1px solid rgba(10,170,221,.3)", background:"rgba(10,170,221,.1)" }}>{tag}</span>
                   ))}
                 </div>
@@ -849,7 +851,7 @@ export function NeonKissaApp() {
                           <p className="m-0 text-[13px] font-bold truncate">{d.name}</p>
                           <div className="flex gap-[6px] mt-[4px]">
                             {it.tags.slice(0, 2).map(tag => (
-                              <span key={tag} className="text-[10px] px-[8px] py-[3px] rounded-full"
+                              <span key={tag} className="mono text-[9px] tracking-[.06em] uppercase px-[8px] py-[3px] rounded-full"
                                 style={{ color:"#8a7f78", background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.08)" }}>{tag}</span>
                             ))}
                           </div>
@@ -918,15 +920,15 @@ export function NeonKissaApp() {
               {!formSent ? (
                 <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fName}<input name="name" required className={inputCls} /></label>
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fEmail}<input name="email" required type="email" className={inputCls} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fName}</span><input name="name" required className={inputCls} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fEmail}</span><input name="email" required type="email" className={inputCls} /></label>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fDate}<input name="date" type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fTime}<input name="time" type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
-                    <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fGuests}<input name="guests" type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fDate}</span><input name="date" type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fTime}</span><input name="time" type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fGuests}</span><input name="guests" type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
                   </div>
-                  <label className="flex flex-col gap-[7px] text-[13px]" style={{ color:"var(--subtle)" }}>{t.fMsg}<textarea name="message" rows={3} className={inputCls + " resize-y"} /></label>
+                  <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fMsg}</span><textarea name="message" rows={3} className={inputCls + " resize-y"} /></label>
                   <div className="flex flex-col gap-2">
                     <button type="submit" disabled={formSubmitting}
                       className="self-start font-bold text-[15px] font-[inherit] border-none px-7 py-[14px] rounded-full cursor-pointer text-white transition-all disabled:opacity-60"
@@ -954,11 +956,11 @@ export function NeonKissaApp() {
               <div className="mono text-[11px] tracking-[.2em] uppercase mb-[16px] md:mb-[18px]" style={{ color:"var(--accent-text)" }}>{t.planLabel}</div>
               {t.planRows.map(r => (
                 <div key={r.k} className="flex justify-between gap-[14px] py-[12px] md:py-[13px] border-b border-white/[.07]">
-                  <span className="text-[13px]" style={{ color:"#8a7f78" }}>{r.k}</span>
+                  <span className="mono text-[11px] tracking-[.12em] uppercase" style={{ color:"#8a7f78" }}>{r.k}</span>
                   <span className="text-[13px] text-right" style={{ color:"#e6ddd6" }}>{r.v}</span>
                 </div>
               ))}
-              <button onClick={openChat} className="inline-flex items-center gap-2 mt-5 mono text-[12px] tracking-[.08em] px-[14px] py-[9px] rounded-full cursor-pointer font-[inherit] transition-all"
+              <button onClick={openChat} className="inline-flex items-center gap-2 mt-5 text-[13px] font-medium px-[14px] py-[9px] rounded-full cursor-pointer font-[inherit] transition-all"
                 style={{ color:"#d7b8ff", background:"color-mix(in srgb,var(--accent2) 10%,transparent)", border:"1px solid color-mix(in srgb,var(--accent2) 30%,transparent)" }}>
                 ✦ {t.askHost}
               </button>
@@ -1000,7 +1002,7 @@ export function NeonKissaApp() {
             </div>
           </div>
 
-          {/* Google Maps link — replaces the old placeholder */}
+          {/* Google Maps link - replaces the old placeholder */}
           <a href="https://www.google.com/maps/search/?api=1&query=2-2-1+Kabukicho+Shinjuku+Tokyo"
             target="_blank" rel="noopener noreferrer"
             className="group no-underline h-[220px] md:h-[300px] rounded-[16px] overflow-hidden flex flex-col items-center justify-center gap-5 transition-all"
@@ -1015,7 +1017,7 @@ export function NeonKissaApp() {
             </svg>
             <div className="text-center px-6">
               <p className="m-0 text-[14px] font-medium" style={{ color:"var(--subtle)" }}>{t.addr}</p>
-              <span className="inline-flex items-center gap-[6px] mt-3 mono text-[12px] tracking-[.1em] px-[16px] py-[9px] rounded-full transition-all"
+              <span className="inline-flex items-center gap-[6px] mt-3 text-[13px] font-medium px-[16px] py-[9px] rounded-full transition-all"
                 style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 35%,transparent)", background:"color-mix(in srgb,var(--accent) 7%,transparent)" }}>
                 {t.mapsBtn} ↗
               </span>
@@ -1159,11 +1161,11 @@ function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; acc
 function FilterGroup({ label, options, value, onChange }: { label:string; options:{v:string;l:string}[]; value:string; onChange:(v:string)=>void }) {
   return (
     <>
-      <p className="m-0 mb-[10px] text-[12px] tracking-[.04em]" style={{ color:"#8a7f78" }}>{label}</p>
+      <p className="m-0 mb-[10px] mono text-[11px] tracking-[.16em] uppercase" style={{ color:"#8a7f78" }}>{label}</p>
       <div className="flex flex-wrap gap-[8px] md:gap-[9px] mb-[18px] md:mb-[22px]">
         {options.map(o => (
           <button key={o.v} onClick={() => onChange(o.v)}
-            className={`border rounded-full px-[13px] md:px-[15px] py-[8px] md:py-2 text-[13px] font-[inherit] cursor-pointer transition-all${value!==o.v ? " hover:border-white/30 hover:text-white" : ""}`}
+            className={`border rounded-full px-[13px] md:px-[15px] py-[8px] md:py-2 mono text-[11px] tracking-[.08em] uppercase cursor-pointer transition-all${value!==o.v ? " hover:border-white/30 hover:text-white" : ""}`}
             style={ value===o.v
               ? { borderColor:"color-mix(in srgb,var(--accent) 60%,transparent)", background:"color-mix(in srgb,var(--accent) 12%,transparent)", color:"var(--accent-text)" }
               : { borderColor:"rgba(255,255,255,.14)", background:"none", color:"var(--subtle)" }}>
