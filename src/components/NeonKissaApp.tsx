@@ -223,6 +223,7 @@ const T = {
     chatSugg:["What’s on tonight?","Best cocktail for me?","How do I get there?"],
     chatWelcome:"Irasshaimase! I’m Hana, your host at Neon Kissa. Ask me about cocktails, our hours, or finding a seat. ✦",
     chatClose:"Close chat", chatSend:"Send message", aiDismiss:"Dismiss recommendation",
+    chatNudgeTitle:"Need a hand?", chatNudgeBody:"Ask Hana about cocktails, hours, or a seat.", chatNudgeDismiss:"Dismiss",
   },
   jp: {
     navMenu:"メニュー", navFinder:"カクテル", navAtmos:"雰囲気", navReserve:"予約", navAccess:"アクセス",
@@ -266,6 +267,7 @@ const T = {
     chatSugg:["今夜は何がある？","私へのおすすめは？","行き方を教えて"],
     chatWelcome:"いらっしゃいませ！ネオン喫茶のホスト、花です。カクテル・営業時間・お席のことなど、何でもお尋ねください。✦",
     chatClose:"チャットを閉じる", chatSend:"メッセージを送信", aiDismiss:"おすすめを閉じる",
+    chatNudgeTitle:"お手伝いします", chatNudgeBody:"カクテル・営業時間・お席のことは花へ。", chatNudgeDismiss:"閉じる",
   },
 };
 
@@ -329,6 +331,9 @@ export function NeonKissaApp() {
   const [formError, setFormError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatClosing, setChatClosing] = useState(false);
+  const [nudgeOpen, setNudgeOpen] = useState(false);
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const [nudgeHover, setNudgeHover] = useState(false);
   const [chatMsgs, setChatMsgs] = useState<ChatMsg[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -489,7 +494,16 @@ export function NeonKissaApp() {
     setChatLoading(false);
   }, [chatLoading, lang, chatMsgs]);
 
+  const dismissNudge = useCallback(() => {
+    setNudgeOpen(false);
+    setNudgeDismissed(true);
+    try { sessionStorage.setItem("nk-hana-nudge", "1"); } catch {}
+  }, []);
+
   const openChat = useCallback(() => {
+    setNudgeOpen(false);
+    setNudgeDismissed(true);
+    try { sessionStorage.setItem("nk-hana-nudge", "1"); } catch {}
     setChatClosing(false);
     setChatOpen(true);
     if (chatMsgs.length === 0) {
@@ -497,6 +511,17 @@ export function NeonKissaApp() {
       setShowSugg(true);
     }
   }, [chatMsgs.length, t.chatWelcome]);
+
+  // Proactive nudge: gently reveal the launcher's purpose once per session.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      let seen = false;
+      try { seen = sessionStorage.getItem("nk-hana-nudge") === "1"; } catch {}
+      if (seen || chatOpen || nudgeDismissed) return;
+      setNudgeOpen(true);
+    }, 4200);
+    return () => window.clearTimeout(timer);
+  }, [chatOpen, nudgeDismissed]);
 
   const closeChat = useCallback(() => {
     setChatClosing(true);
@@ -1058,7 +1083,9 @@ export function NeonKissaApp() {
       )}
 
       {/* ── CHATBOT ─────────────────────────────────── */}
-      <div className="fixed right-[14px] md:right-[22px] bottom-[14px] md:bottom-[22px] z-[80] flex flex-col items-end gap-[12px] md:gap-[14px]">
+      <div className="fixed right-[14px] md:right-[22px] bottom-[14px] md:bottom-[22px] z-[80] flex flex-col items-end gap-[12px] md:gap-[14px]"
+        onMouseEnter={() => setNudgeHover(true)}
+        onMouseLeave={() => setNudgeHover(false)}>
         {chatOpen && (
           <div
             role="dialog"
@@ -1130,6 +1157,35 @@ export function NeonKissaApp() {
           </div>
         )}
 
+        {!chatOpen && (nudgeOpen || nudgeHover) && (
+          <div
+            role="button"
+            tabIndex={0}
+            aria-label={`${t.chatNudgeTitle} ${t.chatNudgeBody}`}
+            onClick={openChat}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openChat(); } }}
+            className="nk-nudge relative max-w-[248px] cursor-pointer rounded-[15px] pl-[14px] pr-[30px] py-[12px] flex items-start gap-[11px]"
+            style={{
+              background:"rgba(16,11,13,.97)", backdropFilter:"blur(16px)",
+              border:"1px solid color-mix(in srgb,var(--accent) 30%,transparent)",
+              boxShadow:"0 16px 44px rgba(0,0,0,.55),0 0 30px color-mix(in srgb,var(--accent) 14%,transparent)",
+            }}>
+            <span className="nk-fab-glyph flex-shrink-0 w-[30px] h-[30px] rounded-full grid place-items-center text-[17px]"
+              style={{ color:"var(--accent)", background:"radial-gradient(circle at 34% 28%,color-mix(in srgb,var(--accent) 22%,transparent),rgba(12,8,9,.96))", border:"1px solid color-mix(in srgb,var(--accent) 42%,transparent)" }}>花</span>
+            <span className="min-w-0">
+              <span className="block font-bold text-[13px] leading-tight text-[var(--fg)]">{t.chatNudgeTitle}</span>
+              <span className="block text-[12px] leading-snug mt-[3px]" style={{ color:"var(--subtle)" }}>{t.chatNudgeBody}</span>
+            </span>
+            <button
+              onClick={e => { e.stopPropagation(); setNudgeHover(false); dismissNudge(); }}
+              aria-label={t.chatNudgeDismiss}
+              className="absolute top-[7px] right-[8px] leading-none text-[13px] p-1 bg-transparent border-none cursor-pointer transition-colors hover:text-white"
+              style={{ color:"#8a7f78" }}>✕</button>
+            <span aria-hidden className="absolute w-[12px] h-[12px] rotate-45 right-[24px] -bottom-[6px]"
+              style={{ background:"rgba(16,11,13,.97)", borderRight:"1px solid color-mix(in srgb,var(--accent) 30%,transparent)", borderBottom:"1px solid color-mix(in srgb,var(--accent) 30%,transparent)" }} />
+          </div>
+        )}
+
         <button
           onClick={openChat}
           aria-label={t.chatLauncher}
@@ -1148,6 +1204,12 @@ export function NeonKissaApp() {
           <span className="nk-fab-aura" aria-hidden style={{ animationPlayState: chatOpen ? "paused" : "running" }} />
           <span className="nk-fab-ring" aria-hidden />
           <span className="nk-fab-icon nk-fab-glyph text-[26px] md:text-[28px]" aria-hidden>花</span>
+          {!nudgeDismissed && (
+            <span aria-hidden className="absolute -top-[1px] -right-[1px] w-[11px] h-[11px]">
+              <span className="nk-fab-ping absolute inset-0 rounded-full" style={{ background:"var(--accent)" }} />
+              <span className="absolute inset-0 rounded-full" style={{ background:"var(--accent)", border:"2px solid rgba(12,8,9,.96)", boxShadow:"0 0 8px color-mix(in srgb,var(--accent) 70%,transparent)" }} />
+            </span>
+          )}
         </button>
       </div>
     </>
