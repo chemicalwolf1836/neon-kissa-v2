@@ -1083,6 +1083,7 @@ export function NeonKissaApp() {
                 </div>
                 <div className="text-[11px]" style={{ color:"#8a7f78" }}>{t.hanaRole}</div>
               </div>
+              <button onClick={closeChat} aria-label={t.chatClose} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer transition-colors hover:text-white" style={{ color:"#8a7f78" }}>✕</button>
             </div>
 
             <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-[14px] md:p-[18px] flex flex-col gap-[10px] md:gap-[11px]">
@@ -1130,17 +1131,23 @@ export function NeonKissaApp() {
         )}
 
         <button
-          onClick={chatOpen ? closeChat : openChat}
-          aria-label={chatOpen ? t.chatClose : t.chatLauncher}
-          title={chatOpen ? t.chatClose : t.chatLauncher}
-          className="nk-fab relative w-[54px] h-[54px] md:w-[58px] md:h-[58px] rounded-full border-none cursor-pointer grid place-items-center transition-transform duration-200 hover:-translate-y-[2px] active:scale-90"
-          style={{ color:"var(--accent)", background:"radial-gradient(circle at 34% 28%,color-mix(in srgb,var(--accent) 22%,transparent),rgba(12,8,9,.96))", border:"1px solid color-mix(in srgb,var(--accent) 42%,transparent)" }}>
+          onClick={openChat}
+          aria-label={t.chatLauncher}
+          title={t.chatLauncher}
+          aria-hidden={chatOpen}
+          tabIndex={chatOpen ? -1 : 0}
+          className="nk-fab relative w-[54px] h-[54px] md:w-[58px] md:h-[58px] rounded-full border-none cursor-pointer grid place-items-center"
+          style={{
+            color:"var(--accent)",
+            background:"radial-gradient(circle at 34% 28%,color-mix(in srgb,var(--accent) 22%,transparent),rgba(12,8,9,.96))",
+            border:"1px solid color-mix(in srgb,var(--accent) 42%,transparent)",
+            opacity: chatOpen ? 0 : 1,
+            transform: chatOpen ? "scale(.6) translateY(10px)" : undefined,
+            pointerEvents: chatOpen ? "none" : "auto",
+          }}>
           <span className="nk-fab-aura" aria-hidden style={{ animationPlayState: chatOpen ? "paused" : "running" }} />
           <span className="nk-fab-ring" aria-hidden />
-          <span className="nk-fab-icon nk-fab-glyph text-[26px] md:text-[28px]" aria-hidden
-            style={{ opacity: chatOpen ? 0 : 1, transform:`rotate(${chatOpen ? -90 : 0}deg) scale(${chatOpen ? 0.5 : 1})` }}>花</span>
-          <span className="nk-fab-icon nk-fab-close" aria-hidden
-            style={{ color:"var(--accent)", opacity: chatOpen ? 1 : 0, transform:`rotate(${chatOpen ? 0 : 90}deg) scale(${chatOpen ? 1 : 0.5})` }}>✕</span>
+          <span className="nk-fab-icon nk-fab-glyph text-[26px] md:text-[28px]" aria-hidden>花</span>
         </button>
       </div>
     </>

@@ -88,13 +88,14 @@
           mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 2px));
   animation:nkSpin 5s linear infinite;
 }
+.nk-fab { transition:opacity .3s ease, transform .3s cubic-bezier(.22,.68,0,1.2); }
+.nk-fab:hover  { transform:translateY(-2px); }
+.nk-fab:active { transform:scale(.92); }
 .nk-fab:hover .nk-fab-ring { opacity:1; animation-duration:2.6s; }
 .nk-fab-icon {
   position:absolute; inset:0; display:grid; place-items:center; line-height:1; pointer-events:none;
-  transition:opacity .22s ease, transform .28s cubic-bezier(.22,.68,0,1.2);
 }
 .nk-fab-glyph { font-weight:300; }
-.nk-fab-close { font-size:19px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:.01ms!important; animation-iteration-count:1!important; }
