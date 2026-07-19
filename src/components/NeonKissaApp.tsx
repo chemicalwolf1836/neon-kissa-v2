@@ -1083,7 +1083,6 @@ export function NeonKissaApp() {
                 </div>
                 <div className="text-[11px]" style={{ color:"#8a7f78" }}>{t.hanaRole}</div>
               </div>
-              <button onClick={closeChat} aria-label={t.chatClose} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer" style={{ color:"#8a7f78" }}>✕</button>
             </div>
 
             <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-[14px] md:p-[18px] flex flex-col gap-[10px] md:gap-[11px]">
