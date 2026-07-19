@@ -1134,10 +1134,10 @@ export function NeonKissaApp() {
 
 /* ── SUB-COMPONENTS ──────────────────────────────────── */
 function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; accent:"accent"|"accent2"|"green"; divider:"normal"|"dual"|"green"; title:string; jp:string; sub:string }) {
-  const strokeColor = {
-    accent: "color-mix(in srgb,var(--accent) 50%,transparent)",
-    accent2: "color-mix(in srgb,var(--accent2) 50%,transparent)",
-    green: "rgba(54,224,138,.5)",
+  const numColor = {
+    accent: "var(--accent)",
+    accent2: "var(--accent2)",
+    green: "#36e08a",
   }[accent];
   const dividerBg = {
     normal: "linear-gradient(90deg,var(--accent),transparent)",
@@ -1145,15 +1145,15 @@ function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; acc
     green: "linear-gradient(90deg,#36e08a,#0ad,transparent)",
   }[divider];
   return (
-    <div className="flex items-start gap-4 md:gap-7 mb-8 md:mb-11">
-      <span className="mono text-[36px] md:text-[52px] leading-none font-bold flex-shrink-0" style={{ color:"transparent", WebkitTextStroke:`1px ${strokeColor}` }}>{num}</span>
-      <div>
-        <div className="w-12 md:w-16 h-px mb-[12px] md:mb-[14px]" style={{ background:dividerBg }} />
-        <h2 className="m-0 font-black leading-[1.04]" style={{ fontSize:"clamp(24px,3.4vw,44px)" }}>
-          {title} <span aria-hidden className="inline-block align-middle rounded-full" style={{ width:2, height:".46em", background:"var(--accent)", margin:"0 .3em" }} /> <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>{jp}</span>
-        </h2>
-        <p className="mt-[8px] md:mt-[10px] text-[14px] md:text-[15px]" style={{ color:"var(--muted)", maxWidth:"52ch" }}>{sub}</p>
-      </div>
+    <div className="grid gap-x-4 md:gap-x-7 mb-8 md:mb-11" style={{ gridTemplateColumns:"auto 1fr" }}>
+      {/* accent line above the title */}
+      <div className="w-12 md:w-16 h-px mb-[12px] md:mb-[14px]" style={{ background:dividerBg, gridColumn:2, gridRow:1 }} />
+      {/* number, vertically centered on the title row */}
+      <span className="mono text-[42px] md:text-[64px] leading-none font-medium flex-shrink-0 self-center" style={{ color:numColor, gridColumn:1, gridRow:2, transform:"translateY(-0.06em)" }}>{num}</span>
+      <h2 className="m-0 font-black leading-[1.04] self-center" style={{ fontSize:"clamp(24px,3.4vw,44px)", gridColumn:2, gridRow:2 }}>
+        {title} <span aria-hidden className="inline-block align-middle rounded-full" style={{ width:2, height:".46em", background:"var(--accent)", margin:"0 .3em" }} /> <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>{jp}</span>
+      </h2>
+      <p className="mt-[8px] md:mt-[10px] text-[14px] md:text-[15px]" style={{ color:"var(--muted)", maxWidth:"52ch", gridColumn:2, gridRow:3 }}>{sub}</p>
     </div>
   );
 }
