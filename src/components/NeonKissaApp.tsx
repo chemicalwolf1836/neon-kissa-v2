@@ -978,7 +978,7 @@ export function NeonKissaApp() {
           <div>
             <div className="w-16 h-px mb-4" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
             <h2 className="m-0 font-black mb-[18px] md:mb-[22px]" style={{ fontSize:"clamp(26px,3vw,40px)" }}>
-              {t.accessTitle} <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>道案内</span>
+              {t.accessTitle} <span aria-hidden className="inline-block align-middle rounded-full" style={{ width:2, height:".46em", background:"var(--accent)", margin:"0 .3em" }} /> <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>道案内</span>
             </h2>
             <div className="flex flex-col gap-[14px] md:gap-4 text-[14px] md:text-[15px]">
               <div>
@@ -1150,7 +1150,7 @@ function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; acc
       <div>
         <div className="w-12 md:w-16 h-px mb-[12px] md:mb-[14px]" style={{ background:dividerBg }} />
         <h2 className="m-0 font-black leading-[1.04]" style={{ fontSize:"clamp(24px,3.4vw,44px)" }}>
-          {title} <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>{jp}</span>
+          {title} <span aria-hidden className="inline-block align-middle rounded-full" style={{ width:2, height:".46em", background:"var(--accent)", margin:"0 .3em" }} /> <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>{jp}</span>
         </h2>
         <p className="mt-[8px] md:mt-[10px] text-[14px] md:text-[15px]" style={{ color:"var(--muted)", maxWidth:"52ch" }}>{sub}</p>
       </div>
