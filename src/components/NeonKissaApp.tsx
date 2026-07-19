@@ -328,6 +328,7 @@ export function NeonKissaApp() {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [chatClosing, setChatClosing] = useState(false);
   const [chatMsgs, setChatMsgs] = useState<ChatMsg[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -489,12 +490,21 @@ export function NeonKissaApp() {
   }, [chatLoading, lang, chatMsgs]);
 
   const openChat = useCallback(() => {
+    setChatClosing(false);
     setChatOpen(true);
     if (chatMsgs.length === 0) {
       setChatMsgs([{ role: "bot", text: t.chatWelcome }]);
       setShowSugg(true);
     }
   }, [chatMsgs.length, t.chatWelcome]);
+
+  const closeChat = useCallback(() => {
+    setChatClosing(true);
+    window.setTimeout(() => {
+      setChatOpen(false);
+      setChatClosing(false);
+    }, 200);
+  }, []);
 
   const handleFormSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -1053,20 +1063,19 @@ export function NeonKissaApp() {
           <div
             role="dialog"
             aria-label={t.hanaName}
-            className="flex flex-col rounded-[18px] md:rounded-[20px] overflow-hidden"
+            className={`nk-chat-panel${chatClosing ? " is-closing" : ""} flex flex-col rounded-[18px] md:rounded-[20px] overflow-hidden`}
             style={{
               width: isMobile ? "calc(100vw - 28px)" : "368px",
               height: isMobile ? "calc(100vh - 120px)" : "540px",
               maxHeight: "calc(100vh - 120px)",
               background:"rgba(16,11,13,.97)", backdropFilter:"blur(16px)",
               border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)",
-              boxShadow:"0 24px 70px rgba(0,0,0,.65),0 0 44px color-mix(in srgb,var(--accent) 16%,transparent)",
-              animation:"nkPop .28s ease both"
+              boxShadow:"0 24px 70px rgba(0,0,0,.65),0 0 44px color-mix(in srgb,var(--accent) 16%,transparent)"
             }}>
             <div className="flex items-center gap-3 p-[14px_16px] md:p-[16px_18px] border-b border-white/[.08]"
               style={{ background:"color-mix(in srgb,var(--accent) 6%,transparent)" }}>
-              <div className="w-[38px] h-[38px] md:w-[40px] md:h-[40px] rounded-full flex-shrink-0 flex items-center justify-center text-[17px] md:text-[19px] text-white"
-                style={{ background:"radial-gradient(circle at 35% 30%,var(--accent-text),var(--accent))", boxShadow:"0 0 16px color-mix(in srgb,var(--accent) 55%,transparent)" }}>花</div>
+              <div className="nk-fab-glyph w-[38px] h-[38px] md:w-[40px] md:h-[40px] rounded-full flex-shrink-0 flex items-center justify-center text-[19px] md:text-[21px]"
+                style={{ color:"var(--accent)", background:"radial-gradient(circle at 34% 28%,color-mix(in srgb,var(--accent) 22%,transparent),rgba(12,8,9,.96))", border:"1px solid color-mix(in srgb,var(--accent) 42%,transparent)", boxShadow:"0 0 16px color-mix(in srgb,var(--accent) 28%,transparent)" }}>花</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-[7px]">
                   <span className="font-bold text-[14px] md:text-[15px]">{t.hanaName}</span>
@@ -1074,7 +1083,7 @@ export function NeonKissaApp() {
                 </div>
                 <div className="text-[11px]" style={{ color:"#8a7f78" }}>{t.hanaRole}</div>
               </div>
-              <button onClick={() => setChatOpen(false)} aria-label={t.chatClose} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer" style={{ color:"#8a7f78" }}>✕</button>
+              <button onClick={closeChat} aria-label={t.chatClose} className="bg-transparent border-none text-[20px] leading-none p-1 cursor-pointer transition-colors hover:text-white" style={{ color:"#8a7f78" }}>✕</button>
             </div>
 
             <div ref={chatBodyRef} className="flex-1 overflow-y-auto p-[14px] md:p-[18px] flex flex-col gap-[10px] md:gap-[11px]">
@@ -1121,11 +1130,24 @@ export function NeonKissaApp() {
           </div>
         )}
 
-        <button onClick={openChat}
-          className="inline-flex items-center gap-[8px] md:gap-[10px] border-none text-white font-[inherit] font-bold text-[13px] md:text-[14px] px-[16px] md:px-5 py-[11px] md:py-[13px] rounded-full cursor-pointer transition-all hover:brightness-110 hover:-translate-y-[1px] active:scale-95"
-          style={{ background:"linear-gradient(135deg,var(--accent),var(--accent2))", boxShadow:"0 8px 30px color-mix(in srgb,var(--accent) 40%,transparent)" }}>
-          <span className="w-[28px] h-[28px] md:w-[30px] md:h-[30px] rounded-full bg-white/20 flex items-center justify-center text-[14px] md:text-[15px]">花</span>
-          {t.chatLauncher}
+        <button
+          onClick={openChat}
+          aria-label={t.chatLauncher}
+          title={t.chatLauncher}
+          aria-hidden={chatOpen}
+          tabIndex={chatOpen ? -1 : 0}
+          className="nk-fab relative w-[54px] h-[54px] md:w-[58px] md:h-[58px] rounded-full border-none cursor-pointer grid place-items-center"
+          style={{
+            color:"var(--accent)",
+            background:"radial-gradient(circle at 34% 28%,color-mix(in srgb,var(--accent) 22%,transparent),rgba(12,8,9,.96))",
+            border:"1px solid color-mix(in srgb,var(--accent) 42%,transparent)",
+            opacity: chatOpen ? 0 : 1,
+            transform: chatOpen ? "scale(.6) translateY(10px)" : undefined,
+            pointerEvents: chatOpen ? "none" : "auto",
+          }}>
+          <span className="nk-fab-aura" aria-hidden style={{ animationPlayState: chatOpen ? "paused" : "running" }} />
+          <span className="nk-fab-ring" aria-hidden />
+          <span className="nk-fab-icon nk-fab-glyph text-[26px] md:text-[28px]" aria-hidden>花</span>
         </button>
       </div>
     </>
