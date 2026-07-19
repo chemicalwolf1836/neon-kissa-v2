@@ -3,7 +3,7 @@ import { Zen_Kaku_Gothic_New, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const zenKaku = Zen_Kaku_Gothic_New({
-  weight: ["400", "500", "700", "900"],
+  weight: ["300", "400", "500", "700", "900"],
   subsets: ["latin"],
   variable: "--font-zen-kaku",
   display: "swap",
