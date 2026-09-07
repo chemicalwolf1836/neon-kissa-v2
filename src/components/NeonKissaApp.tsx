@@ -771,8 +771,11 @@ export function NeonKissaApp() {
           <div className="p-[24px] md:p-[38px_40px] flex flex-col justify-center">
             <div className="flex items-center gap-3 flex-wrap">
               <span style={{ color:"var(--accent-text)" }}>{GlassSVG.coupe}</span>
-              <h3 className="m-0 font-black text-[24px] md:text-[30px]">Shinjuku Bloom</h3>
-              <span className="mono text-[13px] md:text-[14px]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
+              <div className="flex flex-col items-start">
+                <h3 className="m-0 font-black text-[24px] md:text-[30px]">Shinjuku Bloom</h3>
+                <span aria-hidden className="rounded-full flex-shrink-0 my-[8px]" style={{ width:28, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
+                <span className="mono text-[13px] md:text-[14px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
+              </div>
             </div>
             <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
             <div className="mt-[18px] md:mt-[22px] flex items-center gap-[18px]">
@@ -795,10 +798,10 @@ export function NeonKissaApp() {
                 <div className="flex gap-[12px] md:gap-[14px] items-start flex-1">
                   <span style={{ color:"var(--accent-text)", flexShrink:0 }}>{GlassSVG[item.glass]}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-[8px] flex-wrap">
+                    <div className="flex flex-col items-start">
                       <p className="m-0 font-bold text-[16px] md:text-[17px]">{d.name}</p>
-                      <span aria-hidden className="self-center rounded-full flex-shrink-0 h-[12px] md:h-[13px]" style={{ width:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
-                      <span className="mono text-[11px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
+                      <span aria-hidden className="rounded-full flex-shrink-0 my-[6px]" style={{ width:20, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
+                      <span className="mono text-[11px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{d.jp}</span>
                     </div>
                     <p className="mt-[6px] md:mt-2 mono text-[12px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
                   </div>
@@ -839,10 +842,10 @@ export function NeonKissaApp() {
             <div className="flex items-start gap-4">
               <span style={{ color:"var(--accent-text)", transform:"scale(1.25)", transformOrigin:"top left", flexShrink:0 }}>{GlassSVG[bestMatch.glass]}</span>
               <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-[10px] flex-wrap">
+                <div className="flex flex-col items-start">
                   <h3 className="m-0 font-extrabold text-[20px] md:text-[22px]">{(lang==="jp"?bestMatch.jp:bestMatch.en).name}</h3>
-                  <span aria-hidden className="self-center rounded-full flex-shrink-0 h-[14px] md:h-[15px]" style={{ width:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
-                  <span className="mono text-[12px] md:text-[13px]" style={{ color:"#8a7f78" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).jp}</span>
+                  <span aria-hidden className="rounded-full flex-shrink-0 my-[7px]" style={{ width:24, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
+                  <span className="mono text-[12px] md:text-[13px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).jp}</span>
                 </div>
                 <p className="mt-2 mono text-[12px] md:text-[13px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
                 <p className="mt-2 mono text-[11px] tracking-[.03em]" style={{ color:"#8a7f78" }}>
