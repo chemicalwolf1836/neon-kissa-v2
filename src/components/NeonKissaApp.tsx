@@ -797,6 +797,7 @@ export function NeonKissaApp() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-[8px] flex-wrap">
                       <p className="m-0 font-bold text-[16px] md:text-[17px]">{d.name}</p>
+                      <span aria-hidden className="self-center rounded-full flex-shrink-0 h-[12px] md:h-[13px]" style={{ width:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
                       <span className="mono text-[11px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
                     </div>
                     <p className="mt-[6px] md:mt-2 mono text-[12px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
@@ -840,6 +841,7 @@ export function NeonKissaApp() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-[10px] flex-wrap">
                   <h3 className="m-0 font-extrabold text-[20px] md:text-[22px]">{(lang==="jp"?bestMatch.jp:bestMatch.en).name}</h3>
+                  <span aria-hidden className="self-center rounded-full flex-shrink-0 h-[14px] md:h-[15px]" style={{ width:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
                   <span className="mono text-[12px] md:text-[13px]" style={{ color:"#8a7f78" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).jp}</span>
                 </div>
                 <p className="mt-2 mono text-[12px] md:text-[13px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
