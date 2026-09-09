@@ -863,7 +863,7 @@ export function NeonKissaApp() {
             </div>
             <button onClick={askHanaAI} disabled={aiLoading}
               className="mt-[20px] md:mt-[22px] w-full inline-flex items-center justify-center gap-2 text-[14px] font-[inherit] px-[18px] py-3 rounded-[12px] cursor-pointer transition-all disabled:opacity-60"
-              style={{ border:"1px solid color-mix(in srgb,var(--accent2) 40%,transparent)", background:"color-mix(in srgb,var(--accent2) 12%,transparent)", color:"#d7b8ff" }}>
+              style={{ border:"1px solid color-mix(in srgb,var(--accent2) 40%,transparent)", background:"color-mix(in srgb,var(--accent2) 12%,transparent)", color:"color-mix(in srgb,var(--accent2) 50%,#ffffff)" }}>
               <span>✦</span><span>{aiLoading ? (lang==="jp"?"確認中…":"Asking Hana…") : t.askAI}</span>
             </button>
             {aiRec && (
@@ -1003,7 +1003,7 @@ export function NeonKissaApp() {
                 </div>
               ))}
               <button onClick={openChat} className="inline-flex items-center gap-2 mt-5 text-[13px] font-medium px-[14px] py-[9px] rounded-full cursor-pointer font-[inherit] transition-all"
-                style={{ color:"#d7b8ff", background:"color-mix(in srgb,var(--accent2) 10%,transparent)", border:"1px solid color-mix(in srgb,var(--accent2) 30%,transparent)" }}>
+                style={{ color:"color-mix(in srgb,var(--accent2) 50%,#ffffff)", background:"color-mix(in srgb,var(--accent2) 10%,transparent)", border:"1px solid color-mix(in srgb,var(--accent2) 30%,transparent)" }}>
                 ✦ {t.askHost}
               </button>
             </div>
