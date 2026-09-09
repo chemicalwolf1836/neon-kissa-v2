@@ -769,18 +769,20 @@ export function NeonKissaApp() {
               style={{ background:"color-mix(in srgb,var(--accent) 90%,transparent)" }}>{t.featLabel}</span>
           </div>
           <div className="p-[24px] md:p-[38px_40px] flex flex-col justify-center">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span style={{ color:"var(--accent-text)" }}>{GlassSVG.coupe}</span>
-              <div className="flex flex-col items-start">
-                <h3 className="m-0 font-black text-[24px] md:text-[30px]">Shinjuku Bloom</h3>
-                <span aria-hidden className="rounded-full flex-shrink-0 my-[8px]" style={{ width:28, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
-                <span className="mono text-[13px] md:text-[14px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
+            <div className="flex items-start gap-3">
+              <span className="flex-shrink-0 mt-[2px] md:mt-[5px]" style={{ color:"var(--accent-text)" }}>{GlassSVG.coupe}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col items-start">
+                  <h3 className="m-0 font-black text-[24px] md:text-[30px]">Shinjuku Bloom</h3>
+                  <span aria-hidden className="rounded-full flex-shrink-0 my-[8px]" style={{ width:28, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
+                  <span className="mono text-[13px] md:text-[14px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
+                </div>
+                <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
+                <div className="mt-[18px] md:mt-[22px] flex items-center gap-[18px]">
+                  <span className="mono text-[20px] md:text-[22px]" style={{ color:"var(--accent)" }}>¥1,600</span>
+                  <span className="mono text-[10px] tracking-[.1em] uppercase" style={{ color:"#8a7f78" }}>{t.featNote}</span>
+                </div>
               </div>
-            </div>
-            <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
-            <div className="mt-[18px] md:mt-[22px] flex items-center gap-[18px]">
-              <span className="mono text-[20px] md:text-[22px]" style={{ color:"var(--accent)" }}>¥1,600</span>
-              <span className="mono text-[10px] tracking-[.1em] uppercase" style={{ color:"#8a7f78" }}>{t.featNote}</span>
             </div>
           </div>
         </div>
@@ -791,22 +793,22 @@ export function NeonKissaApp() {
             const d = lang === "jp" ? item.jp : item.en;
             return (
               <div key={item.glass}
-                className="flex flex-col gap-3 p-[18px_20px] md:p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
+                className="flex flex-col p-[18px_20px] md:p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
                 style={{ borderColor:"rgba(255,255,255,.1)" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 40%,transparent)"; e.currentTarget.style.boxShadow="0 10px 34px color-mix(in srgb,var(--accent) 14%,transparent)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(255,255,255,.1)"; e.currentTarget.style.boxShadow="none"; }}>
                 <div className="flex gap-[12px] md:gap-[14px] items-start flex-1">
                   <span style={{ color:"var(--accent-text)", flexShrink:0 }}>{GlassSVG[item.glass]}</span>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 flex flex-col self-stretch">
                     <div className="flex flex-col items-start">
                       <p className="m-0 font-bold text-[16px] md:text-[17px]">{d.name}</p>
                       <span aria-hidden className="rounded-full flex-shrink-0 my-[6px]" style={{ width:20, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
                       <span className="mono text-[11px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{d.jp}</span>
                     </div>
-                    <p className="mt-[6px] md:mt-2 mono text-[12px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+                    <p className="mt-[12px] md:mt-[14px] mono text-[12px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+                    <p className="m-0 mono text-[16px] md:text-[17px] mt-auto pt-[14px]" style={{ color:"var(--accent)" }}>{item.price}</p>
                   </div>
                 </div>
-                <p className="m-0 mono text-[16px] md:text-[17px] mt-auto pt-[10px]" style={{ color:"var(--accent)" }}>{item.price}</p>
               </div>
             );
           })}
@@ -847,7 +849,7 @@ export function NeonKissaApp() {
                   <span aria-hidden className="rounded-full flex-shrink-0 my-[7px]" style={{ width:24, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
                   <span className="mono text-[12px] md:text-[13px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).jp}</span>
                 </div>
-                <p className="mt-2 mono text-[12px] md:text-[13px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
+                <p className="mt-[12px] md:mt-[14px] mono text-[12px] md:text-[13px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--subtle)" }}>{(lang==="jp"?bestMatch.jp:bestMatch.en).desc}</p>
                 <p className="mt-2 mono text-[11px] tracking-[.03em]" style={{ color:"#8a7f78" }}>
                   {(baseLabel[bestMatch.base]||{})[lang]||bestMatch.base} · {(sweetLabel[bestMatch.sweetness]||{})[lang]||bestMatch.sweetness}
                 </p>
