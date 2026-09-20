@@ -206,6 +206,7 @@ const T = {
     sweetOpts:[{v:"any",l:"Any"},{v:"dry",l:"Dry"},{v:"balanced",l:"Balanced"},{v:"sweet",l:"Sweet"}] as {v:string;l:string}[],
     atmosTitle:"The Atmosphere", atmosSub:"A red-lit counter tucked off the main street - see the vibe before you visit.",
     atmosView:"View photo", lightboxClose:"Close photo", lightboxPrev:"Previous photo", lightboxNext:"Next photo",
+    atmosCaption:"The counter, 23:15",
     reserveTitle:"Reservations", reserveSub:"A quick request - we confirm by email within 24 hours.",
     fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
     fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We’ll reply by email within 24 hours. Walk-ins also welcome.",
@@ -216,7 +217,7 @@ const T = {
     askHost:"Ask Hana about your visit",
     accessTitle:"Find Us", addrLabel:"ADDRESS", addr:"2-2-1 Kabukicho, Shinjuku-ku, Tokyo",
     hoursLabel:"HOURS", hours:"Daily 18:00–03:00 · Last entry 02:00", phoneLabel:"PHONE",
-    mapsBtn:"Open in Google Maps",
+    mapsBtn:"Open in Google Maps", copyAddr:"Copy address", copied:"Copied",
     footer:"© 2026 Neon Kissa · Shinjuku, Tokyo",
     hanaName:"Hana", hanaRole:"Virtual host at Neon Kissa",
     chatLauncher:"Chat with Hana", chatPh:"Ask about cocktails, hours, or reservations…",
@@ -250,6 +251,7 @@ const T = {
     sweetOpts:[{v:"any",l:"指定なし"},{v:"dry",l:"ドライ"},{v:"balanced",l:"バランス"},{v:"sweet",l:"甘め"}] as {v:string;l:string}[],
     atmosTitle:"雰囲気", atmosSub:"大通りを外れた赤いカウンター - 訪れる前に雰囲気を感じてください。",
     atmosView:"写真を見る", lightboxClose:"写真を閉じる", lightboxPrev:"前の写真", lightboxNext:"次の写真",
+    atmosCaption:"カウンター、23:15",
     reserveTitle:"予約", reserveSub:"簡単なリクエスト - 24時間以内にメールで確認します。",
     fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
     fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fSending:"送信中…", fHint:"24時間以内にメールにてご返信いたします。",
@@ -260,7 +262,7 @@ const T = {
     askHost:"花にご相談ください",
     accessTitle:"アクセス", addrLabel:"住所", addr:"東京都新宿区歌舞伎町2-2-1",
     hoursLabel:"営業時間", hours:"毎日18:00〜03:00・最終入場02:00", phoneLabel:"電話",
-    mapsBtn:"Googleマップで開く",
+    mapsBtn:"Googleマップで開く", copyAddr:"住所をコピー", copied:"コピーしました",
     footer:"© 2026 ネオン喫茶・東京都新宿区",
     hanaName:"花", hanaRole:"ネオン喫茶のバーチャルホスト",
     chatLauncher:"花に話しかける", chatPh:"カクテル・営業時間・予約についてお尋ねください…",
@@ -334,6 +336,7 @@ export function NeonKissaApp() {
   const [nudgeOpen, setNudgeOpen] = useState(false);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [nudgeHover, setNudgeHover] = useState(false);
+  const [addrCopied, setAddrCopied] = useState(false);
   const [chatMsgs, setChatMsgs] = useState<ChatMsg[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -493,6 +496,14 @@ export function NeonKissaApp() {
     }
     setChatLoading(false);
   }, [chatLoading, lang, chatMsgs]);
+
+  const copyAddress = useCallback(() => {
+    try {
+      navigator.clipboard?.writeText(t.addr);
+      setAddrCopied(true);
+      window.setTimeout(() => setAddrCopied(false), 1800);
+    } catch {}
+  }, [t.addr]);
 
   const dismissNudge = useCallback(() => {
     setNudgeOpen(false);
@@ -694,12 +705,20 @@ export function NeonKissaApp() {
           <Image src={heroUrl} alt="" fill priority sizes="100vw" className="object-cover" />
         )}
         <div aria-hidden className="absolute inset-0"
-          style={{ background:"linear-gradient(90deg,rgba(11,8,9,.96) 0%,rgba(11,8,9,.78) 32%,rgba(11,8,9,.32) 70%,rgba(11,8,9,.55) 100%),linear-gradient(0deg,#0b0809 2%,rgba(11,8,9,.05) 48%)" }} />
+          style={{ background:"radial-gradient(140% 82% at 50% 38%,transparent 28%,rgba(11,8,9,.58) 70%,rgba(11,8,9,.95) 100%),linear-gradient(90deg,rgba(11,8,9,.92) 0%,rgba(11,8,9,.6) 40%,rgba(11,8,9,.2) 72%,rgba(11,8,9,.5) 100%),linear-gradient(0deg,#0b0809 3%,rgba(11,8,9,.05) 52%)" }} />
         <p aria-hidden className="absolute top-[120px] right-[42px] hidden lg:block"
           style={{ writingMode:"vertical-rl", fontSize:13, letterSpacing:".5em", color:"rgba(255,255,255,.24)" }}>
           新宿の夜にともる、ひとつの灯
         </p>
         <div className="relative max-w-[1240px] w-full mx-auto px-4 sm:px-8 pb-[56px] md:pb-[92px]" style={{ animation:"nkRise .7s ease both" }}>
+          <div className="mb-[18px] md:mb-[22px]">
+            <span className="inline-flex items-center gap-2 mono text-[11px] md:text-[12px] tracking-[.08em] px-[13px] md:px-[15px] py-[8px] rounded-full"
+              style={{ color:"var(--fg)", border:"1px solid color-mix(in srgb,var(--accent) 55%,transparent)", background:"rgba(0,0,0,.42)" }}>
+              <span className="w-[7px] h-[7px] rounded-full flex-shrink-0"
+                style={{ background:openDot, boxShadow:`0 0 9px ${openDot}`, animation:"nkPulse 2.4s infinite" }} />
+              {openText}
+            </span>
+          </div>
           <div className="flex items-center gap-[14px] mb-4 md:mb-5">
             <span className="w-[32px] md:w-[48px] h-px flex-shrink-0" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
             <span className="mono text-[11px] md:text-[12px] tracking-[.28em] md:tracking-[.34em] uppercase" style={{ color:"var(--accent-text)" }}>{t.kicker}</span>
@@ -707,27 +726,19 @@ export function NeonKissaApp() {
           <h1 className="m-0 font-black leading-[.98] tracking-[-0.01em]"
             style={{ fontSize:"clamp(38px,8vw,92px)", textShadow:"0 2px 40px rgba(0,0,0,.6)", maxWidth:"14ch" }}>
             {t.heroA}<br/>
-            <span style={{ color:"var(--accent)", textShadow:"0 0 22px color-mix(in srgb,var(--accent) 30%,transparent)" }}>{t.heroB}</span>
+            <span style={{ color:"var(--accent)", textShadow:"0 0 6px rgba(255,255,255,.3),0 0 26px color-mix(in srgb,var(--accent) 60%,transparent),0 0 64px color-mix(in srgb,var(--accent) 38%,transparent)", animation:"nkFlicker 7s infinite" }}>{t.heroB}</span>
           </h1>
           <p className="mt-[20px] md:mt-[26px] text-[15px] md:text-[17px] leading-[1.65]" style={{ color:"#cdc3bc", maxWidth:"42ch" }}>
             {t.heroSub1}<br/><span style={{ color:"#8f857e" }}>{t.heroSub2}</span>
           </p>
-          <div className="mt-[28px] md:mt-[34px] flex flex-wrap gap-[12px] md:gap-[14px] items-center">
-            <a href="#reserve" className="inline-flex items-center gap-[10px] no-underline font-bold text-[14px] md:text-[15px] px-[22px] md:px-[26px] py-[13px] md:py-[15px] rounded-full text-white transition-all"
+          <div className="mt-[28px] md:mt-[34px] flex flex-col sm:flex-row sm:flex-wrap gap-[12px] md:gap-[14px] sm:items-center">
+            <a href="#reserve" className="inline-flex items-center justify-center sm:justify-start gap-[10px] no-underline font-bold text-[14px] md:text-[15px] px-[22px] md:px-[26px] py-[15px] rounded-full text-white transition-all w-full sm:w-auto"
               style={{ background:"var(--accent)", boxShadow:"0 6px 22px color-mix(in srgb,var(--accent) 22%,transparent)" }}>
               {t.ctaP} <span className="mono">→</span>
             </a>
-            <a href="#finder" className="inline-flex items-center gap-2 no-underline text-[var(--fg)] text-[14px] md:text-[15px] px-5 md:px-6 py-[13px] md:py-[15px] rounded-full border border-white/[.22] transition-all hover:border-white/50 hover:bg-white/[.05]">
+            <a href="#finder" className="inline-flex items-center justify-center sm:justify-start gap-2 no-underline text-[var(--fg)] text-[14px] md:text-[15px] px-5 md:px-6 py-[14px] md:py-[15px] rounded-full border border-white/[.22] transition-all hover:border-white/50 hover:bg-white/[.05] w-full sm:w-auto">
               {t.ctaS}
             </a>
-          </div>
-          <div className="mt-[24px] md:mt-[30px]">
-            <span className="inline-flex items-center gap-2 mono text-[11px] md:text-[12px] tracking-[.08em] px-[12px] md:px-[14px] py-[7px] rounded-full"
-              style={{ color:"#cdc3bc", border:"1px solid rgba(255,255,255,.14)", background:"rgba(255,255,255,.03)" }}>
-              <span className="w-[7px] h-[7px] rounded-full flex-shrink-0"
-                style={{ background:openDot, boxShadow:`0 0 8px ${openDot}`, animation:"nkPulse 2.4s infinite" }} />
-              {openText}
-            </span>
           </div>
         </div>
       </section>
@@ -793,21 +804,25 @@ export function NeonKissaApp() {
             const d = lang === "jp" ? item.jp : item.en;
             return (
               <div key={item.glass}
-                className="flex flex-col p-[18px_20px] md:p-[24px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
+                className="relative flex flex-col min-h-[212px] md:min-h-[248px] p-[18px_20px_20px] md:p-[24px_26px_26px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px]"
                 style={{ borderColor:"rgba(255,255,255,.1)" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 40%,transparent)"; e.currentTarget.style.boxShadow="0 10px 34px color-mix(in srgb,var(--accent) 14%,transparent)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(255,255,255,.1)"; e.currentTarget.style.boxShadow="none"; }}>
-                <div className="flex gap-[12px] md:gap-[14px] items-start flex-1">
-                  <span style={{ color:"var(--accent-text)", flexShrink:0 }}>{GlassSVG[item.glass]}</span>
-                  <div className="flex-1 min-w-0 flex flex-col self-stretch">
-                    <div className="flex flex-col items-start">
-                      <p className="m-0 font-bold text-[16px] md:text-[17px]">{d.name}</p>
-                      <span aria-hidden className="rounded-full flex-shrink-0 my-[6px]" style={{ width:20, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
-                      <span className="mono text-[11px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{d.jp}</span>
-                    </div>
-                    <p className="mt-[12px] md:mt-[14px] mono text-[12px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
-                    <p className="m-0 mono text-[16px] md:text-[17px] mt-auto pt-[14px]" style={{ color:"var(--accent)" }}>{item.price}</p>
-                  </div>
+                <span aria-hidden className="pointer-events-none absolute right-[-16px] bottom-[-22px]"
+                  style={{ color:"var(--accent-text)", opacity:.1, transform:"scale(4.4)", transformOrigin:"bottom right" }}>{GlassSVG[item.glass]}</span>
+                <span className="absolute top-0 right-0 mono text-[15px] md:text-[16px] px-[12px] py-[9px] rounded-bl-[12px]"
+                  style={{ color:"var(--accent)", background:"rgba(11,8,9,.9)", borderLeft:"1px solid rgba(255,255,255,.1)", borderBottom:"1px solid rgba(255,255,255,.1)" }}>{item.price}</span>
+                <div className="relative flex flex-col items-start mt-[28px] md:mt-[32px]">
+                  <p className="m-0 font-bold text-[17px] md:text-[18px] pr-[70px]">{d.name}</p>
+                  <span aria-hidden className="rounded-full flex-shrink-0 my-[7px]" style={{ width:20, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
+                  <span className="mono text-[11px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{d.jp}</span>
+                </div>
+                <p className="relative mt-[12px] md:mt-[14px] mono text-[12px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+                <div className="relative flex flex-wrap gap-[6px] mt-auto pt-[16px]">
+                  {item.tags.slice(0, 2).map(tag => (
+                    <span key={tag} className="mono text-[9px] tracking-[.08em] uppercase px-[9px] py-[4px] rounded-full"
+                      style={{ color:"#8a7f78", border:"1px solid rgba(255,255,255,.14)" }}>{tag}</span>
+                  ))}
                 </div>
               </div>
             );
@@ -916,18 +931,21 @@ export function NeonKissaApp() {
         style={{ scrollMarginTop:68 }}>
         <SectionHead num="03" accent="accent2" divider="dual" title={t.atmosTitle} jp="雰囲気" sub={t.atmosSub} />
 
+        <div className="relative">
+          <div aria-hidden className="pointer-events-none absolute -inset-x-4 -inset-y-6 z-[1]"
+            style={{ background:"radial-gradient(62% 46% at 50% 14%,color-mix(in srgb,var(--accent2) 16%,transparent),transparent 72%)" }} />
         {isMobile ? (
           <div className="grid grid-cols-2 gap-[10px]" style={{ gridAutoRows:"140px" }}>
-            <AtmosTile url={usp(atmos[0],800)} label={t.atmosView} onOpen={el => openLightbox(0, el)} />
-            <AtmosTile url={usp(atmos[1],800)} label={t.atmosView} onOpen={el => openLightbox(1, el)} />
-            <AtmosTile url={usp(atmos[2],800)} label={t.atmosView} onOpen={el => openLightbox(2, el)} />
-            <AtmosTile url={usp(atmos[3],800)} label={t.atmosView} onOpen={el => openLightbox(3, el)} />
-            <AtmosTile url={usp(atmos[4],800)} label={t.atmosView} onOpen={el => openLightbox(4, el)} />
-            <AtmosTile url={usp(atmos[5],800)} label={t.atmosView} onOpen={el => openLightbox(5, el)} />
+            <AtmosTile url={usp(atmos[0],1200)} col="1/3" row="1/3" label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
+            <AtmosTile url={usp(atmos[1],800)} col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
+            <AtmosTile url={usp(atmos[2],800)} col="2" row="3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
+            <AtmosTile url={usp(atmos[3],800)} col="1" row="4" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
+            <AtmosTile url={usp(atmos[4],800)} col="2" row="4" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
+            <AtmosTile url={usp(atmos[5],1200)} col="1/3" row="5" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
           </div>
         ) : (
           <div className="grid gap-3" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
-            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" label={t.atmosView} onOpen={el => openLightbox(0, el)} />
+            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
             <AtmosTile url={usp(atmos[1],800)} col="3" row="1" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
             <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
             <AtmosTile url={usp(atmos[3],800)} col="3" row="2" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
@@ -936,6 +954,7 @@ export function NeonKissaApp() {
             <AtmosTile url={usp(atmos[6],800)} col="4" row="3" label={t.atmosView} onOpen={el => openLightbox(6, el)} />
           </div>
         )}
+        </div>
       </section>
 
       {lightboxIndex !== null && (
@@ -1026,6 +1045,14 @@ export function NeonKissaApp() {
               <div>
                 <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.addrLabel}</div>
                 <div>{t.addr}</div>
+                <button type="button" onClick={copyAddress}
+                  className="mt-[10px] inline-flex items-center gap-[7px] mono text-[10px] tracking-[.1em] uppercase px-[11px] py-[6px] rounded-[8px] cursor-pointer font-[inherit] transition-all hover:text-white"
+                  style={{ color:"var(--subtle)", background:"none", border:"1px solid rgba(255,255,255,.16)" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h8" />
+                  </svg>
+                  {addrCopied ? t.copied : t.copyAddr}
+                </button>
               </div>
               <div>
                 <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.hoursLabel}</div>
@@ -1044,27 +1071,35 @@ export function NeonKissaApp() {
             </div>
           </div>
 
-          {/* Google Maps link - replaces the old placeholder */}
-          <a href="https://www.google.com/maps/search/?api=1&query=2-2-1+Kabukicho+Shinjuku+Tokyo"
-            target="_blank" rel="noopener noreferrer"
-            className="group no-underline h-[220px] md:h-[300px] rounded-[16px] overflow-hidden flex flex-col items-center justify-center gap-5 transition-all"
-            style={{ border:"1px solid rgba(255,255,255,.12)", background:"rgba(255,255,255,.02)" }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 45%,transparent)")}
-            onMouseLeave={e => (e.currentTarget.style.borderColor="rgba(255,255,255,.12)")}>
-            <svg width="36" height="44" viewBox="0 0 36 44" fill="none" aria-hidden>
-              <path d="M18 2C10.268 2 4 8.268 4 16c0 10.5 14 26 14 26S32 26.5 32 16c0-7.732-6.268-14-14-14z"
-                fill="color-mix(in srgb,var(--accent) 20%,transparent)"
-                stroke="var(--accent)" strokeWidth="1.5"/>
-              <circle cx="18" cy="16" r="5" fill="var(--accent)" opacity=".9"/>
-            </svg>
-            <div className="text-center px-6">
-              <p className="m-0 text-[14px] font-medium" style={{ color:"var(--subtle)" }}>{t.addr}</p>
-              <span className="inline-flex items-center gap-[6px] mt-3 text-[13px] font-medium px-[16px] py-[9px] rounded-full transition-all"
-                style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 35%,transparent)", background:"color-mix(in srgb,var(--accent) 7%,transparent)" }}>
-                {t.mapsBtn} ↗
-              </span>
-            </div>
-          </a>
+          {/* Neon map - street grid tinted to the active palette */}
+          <div className="relative h-[240px] md:h-[320px] rounded-[16px] overflow-hidden"
+            style={{ border:"1px solid rgba(255,255,255,.12)" }}>
+            <div aria-hidden className="absolute inset-0"
+              style={{ background:"repeating-linear-gradient(0deg,transparent 0 38px,color-mix(in srgb,var(--accent) 7%,transparent) 38px 40px),repeating-linear-gradient(90deg,transparent 0 52px,color-mix(in srgb,var(--accent) 7%,transparent) 52px 54px),linear-gradient(180deg,#0e0b0c,#0b0809)" }} />
+            <div aria-hidden className="absolute inset-0"
+              style={{ background:"linear-gradient(112deg,transparent 36%,color-mix(in srgb,var(--accent) 14%,transparent) 36% 42%,transparent 42%),linear-gradient(-70deg,transparent 58%,rgba(255,255,255,.05) 58% 62%,transparent 62%)" }} />
+            <div aria-hidden className="absolute inset-0"
+              style={{ background:"radial-gradient(180px 150px at 50% 42%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 72%)" }} />
+            <span aria-hidden className="absolute left-1/2 top-[42%] w-[92px] h-[92px] rounded-full"
+              style={{ transform:"translate(-50%,-50%)", background:"color-mix(in srgb,var(--accent) 13%,transparent)" }} />
+            <span aria-hidden className="absolute left-1/2 top-[42%] w-[50px] h-[50px] rounded-full"
+              style={{ transform:"translate(-50%,-50%)", border:"1px solid color-mix(in srgb,var(--accent) 55%,transparent)" }} />
+            <span aria-hidden className="absolute left-1/2 top-[42%]"
+              style={{ transform:"translate(-50%,-132%)", color:"var(--accent)", filter:"drop-shadow(0 0 12px var(--accent))" }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
+              </svg>
+            </span>
+            <span className="absolute left-1/2 top-[42%] mono text-[10px] tracking-[.18em] whitespace-nowrap px-[11px] py-[5px] rounded-full"
+              style={{ transform:"translate(-50%,26px)", color:"var(--fg)", background:"rgba(0,0,0,.55)", border:"1px solid color-mix(in srgb,var(--accent) 40%,transparent)" }}>NEON KISSA</span>
+            <span aria-hidden className="absolute left-[14px] bottom-[76px] mono text-[9px] tracking-[.16em]" style={{ color:"rgba(255,255,255,.34)" }}>KABUKICHO</span>
+            <a href="https://www.google.com/maps/search/?api=1&query=2-2-1+Kabukicho+Shinjuku+Tokyo"
+              target="_blank" rel="noopener noreferrer"
+              className="absolute left-[14px] right-[14px] bottom-[14px] inline-flex items-center justify-center gap-[8px] no-underline font-bold text-[14px] py-[13px] rounded-[12px] transition-all hover:brightness-110"
+              style={{ background:"var(--accent)", color:"#05100b", boxShadow:"0 8px 26px color-mix(in srgb,var(--accent) 34%,transparent)" }}>
+              {t.mapsBtn} ↗
+            </a>
+          </div>
         </div>
       </section>
 
@@ -1268,7 +1303,7 @@ function FilterGroup({ label, options, value, onChange }: { label:string; option
   );
 }
 
-function AtmosTile({ url, col, row, label, onOpen }: { url:string; col?:string; row?:string; label:string; onOpen:(el:HTMLButtonElement)=>void }) {
+function AtmosTile({ url, col, row, label, caption, counter, onOpen }: { url:string; col?:string; row?:string; label:string; caption?:string; counter?:string; onOpen:(el:HTMLButtonElement)=>void }) {
   return (
     <button
       type="button"
@@ -1280,6 +1315,13 @@ function AtmosTile({ url, col, row, label, onOpen }: { url:string; col?:string; 
       <Image src={url} alt="" fill sizes="(max-width: 768px) 50vw, 25vw"
         className="object-cover transition-transform duration-700 group-hover:scale-[1.06] group-focus-visible:scale-[1.06]"
         style={{ transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }} />
+      {caption && (
+        <span aria-hidden className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-[13px] md:p-[16px]"
+          style={{ background:"linear-gradient(180deg,transparent,rgba(10,6,8,.88))" }}>
+          <span className="font-bold text-[15px] md:text-[17px] leading-[1.25]">{caption}</span>
+          {counter && <span className="mono text-[10px] tracking-[.16em] flex-shrink-0" style={{ color:"var(--accent-text)" }}>{counter}</span>}
+        </span>
+      )}
     </button>
   );
 }
