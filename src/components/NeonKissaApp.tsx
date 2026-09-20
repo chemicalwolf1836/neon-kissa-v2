@@ -705,7 +705,7 @@ export function NeonKissaApp() {
           <Image src={heroUrl} alt="" fill priority sizes="100vw" className="object-cover" />
         )}
         <div aria-hidden className="absolute inset-0"
-          style={{ background:"radial-gradient(140% 82% at 50% 38%,transparent 28%,rgba(11,8,9,.58) 70%,rgba(11,8,9,.95) 100%),linear-gradient(90deg,rgba(11,8,9,.92) 0%,rgba(11,8,9,.6) 40%,rgba(11,8,9,.2) 72%,rgba(11,8,9,.5) 100%),linear-gradient(0deg,#0b0809 3%,rgba(11,8,9,.05) 52%)" }} />
+          style={{ background:"radial-gradient(140% 82% at 50% 38%,transparent 42%,rgba(11,8,9,.42) 72%,rgba(11,8,9,.88) 100%),linear-gradient(90deg,rgba(11,8,9,.82) 0%,rgba(11,8,9,.5) 40%,rgba(11,8,9,.14) 72%,rgba(11,8,9,.44) 100%),linear-gradient(0deg,#0b0809 3%,rgba(11,8,9,.05) 52%)" }} />
         <p aria-hidden className="absolute top-[120px] right-[42px] hidden lg:block"
           style={{ writingMode:"vertical-rl", fontSize:13, letterSpacing:".5em", color:"rgba(255,255,255,.24)" }}>
           新宿の夜にともる、ひとつの灯
