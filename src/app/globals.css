@@ -59,6 +59,12 @@
 .nk-lightbox-fade { animation:nkLightboxFade .18s ease both; }
 .nk-lightbox-pop   { animation:nkPop .22s ease both; }
 
+/* ── HEADER PREFERENCES POPOVER ─────────────────────── */
+.nk-prefs-pop {
+  transform-origin:top right;
+  animation:nkPop .18s cubic-bezier(.22,.68,0,1.2) both;
+}
+
 /* ── CHAT LAUNCHER (FAB) + PANEL TRANSITION ─────────── */
 @keyframes nkChatIn {
   from { opacity:0; transform:translateY(14px) scale(.9); }
