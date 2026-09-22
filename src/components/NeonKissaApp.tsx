@@ -183,6 +183,7 @@ const FEAT_POOL = [
 const T = {
   en: {
     navMenu:"Menu", navFinder:"Finder", navAtmos:"Atmosphere", navReserve:"Reserve", navAccess:"Access",
+    prefsLabel:"Language and mood", prefsLang:"Language", prefsMood:"Mood",
     kicker:"Shinjuku · Tokyo Nightlife",
     heroA:"A cyber-modern", heroB:"cocktail hideout.",
     heroSub1:"Bilingual, walk-in friendly, and built for the neon hours.",
@@ -228,6 +229,7 @@ const T = {
   },
   jp: {
     navMenu:"メニュー", navFinder:"カクテル", navAtmos:"雰囲気", navReserve:"予約", navAccess:"アクセス",
+    prefsLabel:"言語とムード", prefsLang:"言語", prefsMood:"ムード",
     kicker:"新宿・東京ナイトライフ",
     heroA:"サイバーモダンな", heroB:"カクテルの隠れ家。",
     heroSub1:"バイリンガル対応、ウォークイン歓迎、ネオンの夜のために。",
@@ -345,6 +347,7 @@ export function NeonKissaApp() {
   const [atmosPhotos, setAtmosPhotos] = useState<string[]>(ATMOS_POOL[0].slice(0, 7));
   const [featImg, setFeatImg] = useState("");
   const [navOpen, setNavOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -353,6 +356,7 @@ export function NeonKissaApp() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const lastTileRef = useRef<HTMLButtonElement | null>(null);
+  const prefsRef = useRef<HTMLDivElement>(null);
 
   const openLightbox = useCallback((i: number, el: HTMLButtonElement | null) => {
     lastTileRef.current = el;
@@ -417,6 +421,21 @@ export function NeonKissaApp() {
     document.addEventListener("click", close, { once: true });
     return () => document.removeEventListener("click", close);
   }, [navOpen]);
+
+  /* Close the preferences popover on an outside click or Escape */
+  useEffect(() => {
+    if (!prefsOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!prefsRef.current?.contains(e.target as Node)) setPrefsOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPrefsOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [prefsOpen]);
 
   /* Scroll-to-top visibility + progress beam */
   useEffect(() => {
@@ -582,9 +601,9 @@ export function NeonKissaApp() {
   const inputCls = "w-full bg-black/35 border border-white/10 rounded-[10px] px-[13px] py-[11px] text-white text-sm font-[inherit] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]";
   // Shared form-field label style - matches the finder's uppercase-mono labels
   const fieldLabelCls = "mono text-[11px] tracking-[.16em] uppercase";
-  const NAV_LINKS = ["#menu","#finder","#atmosphere","#reserve","#access"] as const;
-  const NAV_KEYS  = ["navMenu","navFinder","navAtmos","navReserve","navAccess"] as const;
-  const NAV_IDS   = ["menu","finder","atmosphere","reserve","access"] as const;
+  const NAV_LINKS = ["#menu","#finder","#atmosphere","#access"] as const;
+  const NAV_KEYS  = ["navMenu","navFinder","navAtmos","navAccess"] as const;
+  const NAV_IDS   = ["menu","finder","atmosphere","access"] as const;
 
   /* Current atmosphere tile IDs (updates once per day on mount) */
   const atmos = atmosPhotos;
@@ -606,19 +625,19 @@ export function NeonKissaApp() {
 
       {/* ── HEADER ──────────────────────────────────── */}
       <header className="sticky top-0 z-50 backdrop-blur-[14px] bg-[rgba(11,8,9,.72)] border-b border-white/[.08]">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 h-[60px] md:h-[68px] flex items-center justify-between gap-3">
+        {/* Three zones: logo left, nav centred, controls right */}
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 h-[60px] md:h-[68px] flex items-center justify-between gap-3 lg:grid lg:grid-cols-[1fr_auto_1fr]">
 
           {/* Logo */}
-          <a href="#top" className="flex items-center gap-[10px] no-underline flex-shrink-0" onClick={() => setNavOpen(false)}>
+          <a href="#top" className="flex items-center gap-[10px] no-underline flex-shrink-0 lg:justify-self-start" onClick={() => setNavOpen(false)}>
             <span className="w-[8px] h-[8px] rounded-full bg-[var(--accent)] flex-shrink-0"
               style={{ boxShadow:"0 0 10px var(--accent),0 0 20px color-mix(in srgb,var(--accent) 60%,transparent)", animation:"nkFlicker 4s infinite" }} />
             <span className="mono font-bold tracking-[.28em] text-[13px] md:text-[14px] text-white"
               style={{ textShadow:"0 0 14px color-mix(in srgb,var(--accent) 50%,transparent)" }}>NEON KISSA</span>
-            <span className="hidden sm:inline text-[12px] tracking-[.12em]" style={{ color:"#8a7f78" }}>ネオン喫茶</span>
           </a>
 
           {/* Desktop nav - with active scroll-spy highlight */}
-          <nav className="hidden md:flex items-center gap-[30px] mono text-[11.5px] tracking-[.12em] uppercase">
+          <nav className="hidden md:flex items-center gap-[24px] lg:gap-[34px] lg:justify-self-center mono text-[11.5px] tracking-[.12em] uppercase">
             {NAV_KEYS.map((k, i) => {
               const isActive = activeSection === NAV_IDS[i];
               return (
@@ -636,30 +655,61 @@ export function NeonKissaApp() {
           </nav>
 
           {/* Right controls */}
-          <div className="flex items-center gap-[10px] md:gap-[14px]">
-            {/* Palette swatches */}
-            <div className="flex items-center gap-[6px] pr-[10px] md:pr-[14px] border-r border-white/10">
-              {PALETTES.map(p => (
-                <button key={p.key} onClick={() => setPalette(p.key)} aria-label={`${p.label} theme`}
-                  className="w-[12px] h-[12px] md:w-[14px] md:h-[14px] rounded-full border-none cursor-pointer p-0 outline-none transition-all hover:scale-[1.18]"
-                  style={{ background:p.color, boxShadow:palette===p.key?"0 0 0 2.5px rgba(255,255,255,.7)":"none" }} />
-              ))}
+          <div className="flex items-center gap-[10px] md:gap-[12px] lg:justify-self-end">
+
+            {/* Language + palette, behind one pill */}
+            <div className="relative" ref={prefsRef}>
+              <button
+                onClick={e => { e.stopPropagation(); setPrefsOpen(o => !o); }}
+                aria-label={t.prefsLabel}
+                aria-expanded={prefsOpen}
+                aria-haspopup="true"
+                className="flex items-center gap-[8px] h-[32px] px-[11px] md:px-[12px] rounded-full bg-transparent border border-white/[.16] cursor-pointer mono text-[11px] tracking-[.12em] text-[var(--subtle)] transition-colors hover:border-white/[.32] hover:text-white">
+                <span className="w-[11px] h-[11px] rounded-full flex-shrink-0"
+                  style={{ background:"var(--accent)", boxShadow:"0 0 8px color-mix(in srgb,var(--accent) 50%,transparent)" }} />
+                <span>{lang.toUpperCase()}</span>
+                <svg width="9" height="6" viewBox="0 0 9 6" fill="none" aria-hidden="true" className="transition-transform"
+                  style={{ transform: prefsOpen ? "rotate(180deg)" : "none" }}>
+                  <path d="M1 1.2 4.5 4.6 8 1.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {prefsOpen && (
+                <div role="dialog" aria-label={t.prefsLabel}
+                  className="nk-prefs-pop absolute top-[42px] right-0 w-[212px] p-[14px] rounded-[16px] border border-white/[.12] backdrop-blur-[14px] z-10"
+                  style={{ background:"rgba(16,12,13,.97)", boxShadow:"0 18px 40px rgba(0,0,0,.62)" }}>
+
+                  <div className="mono text-[9.5px] tracking-[.22em] uppercase text-[var(--muted)]">{t.prefsLang}</div>
+                  <div className="mt-[9px] flex border border-white/[.14] rounded-full overflow-hidden mono text-[11px] tracking-[.1em]">
+                    {(["en","jp"] as const).map(l => (
+                      <button key={l} onClick={() => setLang(l)} aria-pressed={lang===l}
+                        className={`flex-1 py-[8px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)] hover:bg-white/[.04]"}`}>
+                        {l.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-[16px] mono text-[9.5px] tracking-[.22em] uppercase text-[var(--muted)]">{t.prefsMood}</div>
+                  <div className="mt-[5px] flex gap-[2px]">
+                    {PALETTES.map(p => (
+                      <button key={p.key} onClick={() => setPalette(p.key)} aria-label={`${p.label} theme`} aria-pressed={palette===p.key}
+                        className="flex items-center justify-center w-[44px] h-[38px] rounded-[10px] border-none bg-transparent cursor-pointer p-0 outline-none transition-transform hover:scale-[1.1]">
+                        <span className="w-[15px] h-[15px] rounded-full"
+                          style={{ background:p.color, boxShadow:palette===p.key?"0 0 0 2.5px rgba(255,255,255,.75)":"none" }} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            {/* Lang toggle */}
-            <div className="flex border border-white/[.14] rounded-full overflow-hidden mono text-[11px] tracking-[.1em]">
-              {(["en","jp"] as const).map(l => (
-                <button key={l} onClick={() => setLang(l)}
-                  className={`px-[14px] md:px-[18px] py-[6px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)]"}`}>
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
+
             {/* Reserve button - hidden on mobile */}
             <a href="#reserve"
-              className="hidden sm:inline-flex items-center justify-center ml-[8px] mono text-[11.5px] tracking-[.16em] uppercase font-bold no-underline px-5 py-[9px] rounded-full transition-all hover:brightness-110 hover:-translate-y-[1px] active:scale-95"
+              className="hidden sm:inline-flex items-center justify-center mono text-[11.5px] tracking-[.16em] uppercase font-bold no-underline px-5 py-[9px] rounded-full transition-all hover:brightness-110 hover:-translate-y-[1px] active:scale-95"
               style={{ color:"#0b0809", border:"1px solid transparent", background:"var(--accent)", boxShadow:"0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)" }}>
               {t.navReserve}
             </a>
+
             {/* Hamburger - mobile only */}
             <button
               onClick={e => { e.stopPropagation(); setNavOpen(o => !o); }}
