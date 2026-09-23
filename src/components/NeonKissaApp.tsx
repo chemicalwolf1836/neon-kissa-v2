@@ -537,6 +537,15 @@ export function NeonKissaApp() {
     return () => window.clearTimeout(timer);
   }, [chatOpen, nudgeDismissed]);
 
+  // On a phone the nudge is nearly as wide as the screen, so it covers whatever
+  // sits in the lower half - the Find Us map CTA most of all. Let it retract on
+  // its own there. On desktop it stays until dismissed, as before.
+  useEffect(() => {
+    if (!isMobile || !nudgeOpen || nudgeHover) return;
+    const timer = window.setTimeout(() => setNudgeOpen(false), 8000);
+    return () => window.clearTimeout(timer);
+  }, [isMobile, nudgeOpen, nudgeHover]);
+
   const closeChat = useCallback(() => {
     setChatClosing(true);
     window.setTimeout(() => {
@@ -837,7 +846,7 @@ export function NeonKissaApp() {
         </div>
 
         {/* Menu grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-[14px] md:gap-[18px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[14px] md:gap-[18px]">
           {MENU.filter(it => it !== pick).map(item => {
             const d = lang === "jp" ? item.jp : item.en;
             return (
@@ -972,26 +981,15 @@ export function NeonKissaApp() {
         <div className="relative">
           <div aria-hidden className="pointer-events-none absolute -inset-x-4 -inset-y-6 z-[1]"
             style={{ background:"radial-gradient(62% 46% at 50% 14%,color-mix(in srgb,var(--accent2) 16%,transparent),transparent 72%)" }} />
-        {isMobile ? (
-          <div className="grid grid-cols-2 gap-[10px]" style={{ gridAutoRows:"140px" }}>
-            <AtmosTile url={usp(atmos[0],1200)} col="1/3" row="1/3" label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
-            <AtmosTile url={usp(atmos[1],800)} col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
-            <AtmosTile url={usp(atmos[2],800)} col="2" row="3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
-            <AtmosTile url={usp(atmos[3],800)} col="1" row="4" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
-            <AtmosTile url={usp(atmos[4],800)} col="2" row="4" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
-            <AtmosTile url={usp(atmos[5],1200)} col="1/3" row="5" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
-          </div>
-        ) : (
-          <div className="grid gap-3" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
-            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
-            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
-            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
-            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
-            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
-            <AtmosTile url={usp(atmos[5],1200)} col="2/4" row="3" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
-            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" label={t.atmosView} onOpen={el => openLightbox(6, el)} />
-          </div>
-        )}
+        <div className="nk-atmos">
+          <AtmosTile url={usp(atmos[0],1600)} colM="1/3" rowM="1/3" col="1/3" row="1/3" wide label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
+          <AtmosTile url={usp(atmos[1],800)} colM="1" rowM="3" col="3" row="1" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
+          <AtmosTile url={usp(atmos[2],800)} colM="2" rowM="3" col="4" row="1/3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
+          <AtmosTile url={usp(atmos[3],1200)} colM="1/3" rowM="4" col="3" row="2" wide label={t.atmosView} onOpen={el => openLightbox(3, el)} />
+          <AtmosTile url={usp(atmos[4],800)} colM="1" rowM="5" col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
+          <AtmosTile url={usp(atmos[5],1200)} colM="2" rowM="5" col="2/4" row="3" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
+          <AtmosTile url={usp(atmos[6],1200)} colM="1/3" rowM="6" col="4" row="3" wide label={t.atmosView} onOpen={el => openLightbox(6, el)} />
+        </div>
         </div>
       </section>
 
@@ -1113,6 +1111,7 @@ export function NeonKissaApp() {
           </div>
 
           {/* Neon map - street grid tinted to the active palette */}
+          <div>
           <div className="relative h-[240px] md:h-[320px] rounded-[16px] overflow-hidden"
             style={{ border:"1px solid rgba(255,255,255,.12)" }}>
             <div aria-hidden className="absolute inset-0"
@@ -1133,13 +1132,20 @@ export function NeonKissaApp() {
             </span>
             <span className="absolute left-1/2 top-[42%] mono text-[10px] tracking-[.18em] whitespace-nowrap px-[11px] py-[5px] rounded-full"
               style={{ transform:"translate(-50%,26px)", color:"var(--fg)", background:"rgba(0,0,0,.55)", border:"1px solid color-mix(in srgb,var(--accent) 40%,transparent)" }}>NEON KISSA</span>
-            <span aria-hidden className="absolute left-[14px] bottom-[76px] mono text-[9px] tracking-[.16em]" style={{ color:"rgba(255,255,255,.34)" }}>KABUKICHO</span>
+            <span aria-hidden className="absolute left-[14px] bottom-[14px] md:bottom-[76px] mono text-[9px] tracking-[.16em]" style={{ color:"rgba(255,255,255,.34)" }}>KABUKICHO</span>
             <a href="https://www.google.com/maps/search/?api=1&query=2-2-1+Kabukicho+Shinjuku+Tokyo"
               target="_blank" rel="noopener noreferrer"
-              className="absolute left-[14px] right-[14px] bottom-[14px] inline-flex items-center justify-center gap-[8px] no-underline font-bold text-[14px] py-[13px] rounded-[12px] transition-all hover:brightness-110"
+              className="hidden md:inline-flex absolute left-[14px] right-[14px] bottom-[14px] items-center justify-center gap-[8px] no-underline font-bold text-[14px] py-[13px] rounded-[12px] transition-all hover:brightness-110"
               style={{ background:"var(--accent)", color:"#05100b", boxShadow:"0 8px 26px color-mix(in srgb,var(--accent) 34%,transparent)" }}>
               {t.mapsBtn} ↗
             </a>
+          </div>
+          <a href="https://www.google.com/maps/search/?api=1&query=2-2-1+Kabukicho+Shinjuku+Tokyo"
+            target="_blank" rel="noopener noreferrer"
+            className="md:hidden mt-[14px] flex items-center justify-center gap-[8px] no-underline font-bold text-[14px] py-[13px] rounded-[12px] transition-all hover:brightness-110"
+            style={{ background:"var(--accent)", color:"#05100b", boxShadow:"0 8px 26px color-mix(in srgb,var(--accent) 34%,transparent)" }}>
+            {t.mapsBtn} ↗
+          </a>
           </div>
         </div>
       </section>
@@ -1344,16 +1350,16 @@ function FilterGroup({ label, options, value, onChange }: { label:string; option
   );
 }
 
-function AtmosTile({ url, col, row, label, caption, counter, onOpen }: { url:string; col?:string; row?:string; label:string; caption?:string; counter?:string; onOpen:(el:HTMLButtonElement)=>void }) {
+function AtmosTile({ url, col, row, colM, rowM, wide, label, caption, counter, onOpen }: { url:string; col?:string; row?:string; colM?:string; rowM?:string; wide?:boolean; label:string; caption?:string; counter?:string; onOpen:(el:HTMLButtonElement)=>void }) {
   return (
     <button
       type="button"
       aria-label={label}
       onClick={e => onOpen(e.currentTarget)}
       className="nk-focus-ring group relative rounded-[12px] md:rounded-[14px] overflow-hidden border border-white/[.08] bg-[#0b0809] p-0 cursor-pointer text-left"
-      style={{ gridColumn:col, gridRow:row }}>
+      style={{ "--c-m":colM ?? col, "--r-m":rowM ?? row, "--c-d":col, "--r-d":row } as React.CSSProperties}>
       <div className="absolute inset-0 nk-shimmer" />
-      <Image src={url} alt="" fill sizes="(max-width: 768px) 50vw, 25vw"
+      <Image src={url} alt="" fill sizes={wide ? "(max-width: 767px) 100vw, 25vw" : "(max-width: 767px) 50vw, 25vw"}
         className="object-cover transition-transform duration-700 group-hover:scale-[1.06] group-focus-visible:scale-[1.06]"
         style={{ transitionTimingFunction:"cubic-bezier(.2,.7,.2,1)" }} />
       {caption && (
