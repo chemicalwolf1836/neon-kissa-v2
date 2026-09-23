@@ -56,8 +56,9 @@ const GlassSVG: Record<Glass, ReactElement> = {
 };
 
 /* ── PHOTO HELPER ────────────────────────────────────── */
-const usp = (id: string, w: number) =>
-  `https://images.unsplash.com/${id}?fm=jpg&q=80&w=${w}&auto=format&fit=crop`;
+/* Photos are committed under public/photos; next/image resizes them
+   per the `sizes` each call site declares. */
+const photo = (id: string) => `/photos/${id}.jpg`;
 
 /* ── RESERVATION TIMES (18:00 to last entry 02:00, every 30 min) ── */
 const TIME_SLOTS = Array.from({ length: 17 }, (_, i) => {
@@ -368,7 +369,7 @@ export function NeonKissaApp() {
     // days since epoch → daily rotation; weeks → weekly theme switch
     const days = daysSinceEpoch();
     const weeksSinceEpoch = Math.floor(days / 7);
-    setHeroUrl(usp(HERO_POOL[days % HERO_POOL.length], 2400));
+    setHeroUrl(photo(HERO_POOL[days % HERO_POOL.length]));
     const themeIdx = weeksSinceEpoch % ATMOS_POOL.length;
     const dayOffset = days % 7; // slide 7-photo window forward each day
     setAtmosPhotos(ATMOS_POOL[themeIdx].slice(dayOffset, dayOffset + 7));
@@ -810,7 +811,7 @@ export function NeonKissaApp() {
         {/* Featured - stacks on mobile, side-by-side on md+ */}
         <div className="grid grid-cols-1 md:grid-cols-[.9fr_1.1fr] border border-white/10 rounded-[18px] overflow-hidden mb-[24px] md:mb-[30px] bg-white/[.02]">
           <div className="relative h-[200px] md:min-h-[300px] md:h-auto overflow-hidden">
-            <Image src={usp(featImg || "photo-1514362545857-3bc16c4c7d1b", 1400)} alt=""
+            <Image src={photo(featImg || "photo-1514362545857-3bc16c4c7d1b")} alt=""
               fill sizes="(max-width: 768px) 100vw, 45vw" className="object-cover" />
             <div aria-hidden className="absolute inset-0"
               style={{ background:"linear-gradient(0deg,rgba(11,8,9,.5),rgba(11,8,9,.02))" }} />
@@ -974,22 +975,22 @@ export function NeonKissaApp() {
             style={{ background:"radial-gradient(62% 46% at 50% 14%,color-mix(in srgb,var(--accent2) 16%,transparent),transparent 72%)" }} />
         {isMobile ? (
           <div className="grid grid-cols-2 gap-[10px]" style={{ gridAutoRows:"140px" }}>
-            <AtmosTile url={usp(atmos[0],1200)} col="1/3" row="1/3" label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
-            <AtmosTile url={usp(atmos[1],800)} col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
-            <AtmosTile url={usp(atmos[2],800)} col="2" row="3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
-            <AtmosTile url={usp(atmos[3],800)} col="1" row="4" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
-            <AtmosTile url={usp(atmos[4],800)} col="2" row="4" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
-            <AtmosTile url={usp(atmos[5],1200)} col="1/3" row="5" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
+            <AtmosTile url={photo(atmos[0])} col="1/3" row="1/3" label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
+            <AtmosTile url={photo(atmos[1])} col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
+            <AtmosTile url={photo(atmos[2])} col="2" row="3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
+            <AtmosTile url={photo(atmos[3])} col="1" row="4" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
+            <AtmosTile url={photo(atmos[4])} col="2" row="4" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
+            <AtmosTile url={photo(atmos[5])} col="1/3" row="5" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
           </div>
         ) : (
           <div className="grid gap-3" style={{ gridTemplateColumns:"repeat(4,1fr)", gridAutoRows:"168px" }}>
-            <AtmosTile url={usp(atmos[0],1600)} col="1/3" row="1/3" label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
-            <AtmosTile url={usp(atmos[1],800)} col="3" row="1" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
-            <AtmosTile url={usp(atmos[2],800)} col="4" row="1/3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
-            <AtmosTile url={usp(atmos[3],800)} col="3" row="2" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
-            <AtmosTile url={usp(atmos[4],800)} col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
-            <AtmosTile url={usp(atmos[5],1200)} col="2/4" row="3" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
-            <AtmosTile url={usp(atmos[6],800)} col="4" row="3" label={t.atmosView} onOpen={el => openLightbox(6, el)} />
+            <AtmosTile url={photo(atmos[0])} col="1/3" row="1/3" label={t.atmosView} caption={t.atmosCaption} counter={`01 / ${atmos.length}`} onOpen={el => openLightbox(0, el)} />
+            <AtmosTile url={photo(atmos[1])} col="3" row="1" label={t.atmosView} onOpen={el => openLightbox(1, el)} />
+            <AtmosTile url={photo(atmos[2])} col="4" row="1/3" label={t.atmosView} onOpen={el => openLightbox(2, el)} />
+            <AtmosTile url={photo(atmos[3])} col="3" row="2" label={t.atmosView} onOpen={el => openLightbox(3, el)} />
+            <AtmosTile url={photo(atmos[4])} col="1" row="3" label={t.atmosView} onOpen={el => openLightbox(4, el)} />
+            <AtmosTile url={photo(atmos[5])} col="2/4" row="3" label={t.atmosView} onOpen={el => openLightbox(5, el)} />
+            <AtmosTile url={photo(atmos[6])} col="4" row="3" label={t.atmosView} onOpen={el => openLightbox(6, el)} />
           </div>
         )}
         </div>
@@ -997,7 +998,7 @@ export function NeonKissaApp() {
 
       {lightboxIndex !== null && (
         <AtmosphereLightbox
-          photos={atmos.map(id => usp(id, 1600))}
+          photos={atmos.map(id => photo(id))}
           index={lightboxIndex}
           onNavigate={setLightboxIndex}
           onClose={closeLightbox}
