@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactElement } from "react";
 import Image from "next/image";
 import { AtmosphereLightbox } from "./AtmosphereLightbox";
+import { MENU, type Glass, type MenuItem, isOpenNow, tokyoDateISO, daysSinceEpoch, tonightsPick } from "@/lib/menu";
 
 /* ── CONFIG ──────────────────────────────────────────── */
 // Sign up free at formspree.io and replace with your actual form ID
@@ -11,18 +12,6 @@ const FORMSPREE_ID = "mwvdobgy";
 /* ── TYPES ───────────────────────────────────────────── */
 type Lang = "en" | "jp";
 type Palette = "ruby" | "cyber" | "amber" | "jade";
-type Glass = "highball" | "coupe" | "rocks" | "espresso";
-interface MenuItem {
-  glass: Glass;
-  price: string;
-  priceYen: number;
-  base: string;
-  sweetness: string;
-  vibes: string[];
-  tags: string[];
-  en: { name: string; jp: string; desc: string };
-  jp: { name: string; jp: string; desc: string };
-}
 interface ChatMsg { role: "user" | "bot"; text: string }
 
 /* ── SCROLL REVEAL HOOK ──────────────────────────────── */
@@ -66,25 +55,15 @@ const GlassSVG: Record<Glass, ReactElement> = {
   ),
 };
 
-/* ── MENU DATA ───────────────────────────────────────── */
-const MENU: MenuItem[] = [
-  { glass:"highball", price:"¥1,200", priceYen:1200, base:"whiskey", sweetness:"balanced", vibes:["after-work","chill"], tags:["sparkling","refreshing","smoky"],
-    en:{name:"Neon Highball", jp:"ネオン・ハイボール", desc:"Whiskey, citrus, soda, smoked ice"},
-    jp:{name:"ネオン・ハイボール", jp:"Neon Highball", desc:"ウイスキー、柑橘、ソーダ、スモークアイス"} },
-  { glass:"coupe", price:"¥1,600", priceYen:1600, base:"gin", sweetness:"balanced", vibes:["romantic","chill"], tags:["yuzu","floral","refreshing"],
-    en:{name:"Shinjuku Bloom", jp:"新宿ブルーム", desc:"Gin, yuzu, tonic, floral bitters"},
-    jp:{name:"新宿ブルーム", jp:"Shinjuku Bloom", desc:"ジン、ゆず、トニック、フローラルビターズ"} },
-  { glass:"rocks", price:"¥1,400", priceYen:1400, base:"umeshu", sweetness:"sweet", vibes:["after-work","romantic","chill"], tags:["plum","smooth","spice"],
-    en:{name:"Midnight Ume", jp:"ミッドナイト梅", desc:"Umeshu, plum, spice, lime"},
-    jp:{name:"ミッドナイト梅", jp:"Midnight Ume", desc:"梅酒、プラム、スパイス、ライム"} },
-  { glass:"espresso", price:"¥1,700", priceYen:1700, base:"vodka", sweetness:"balanced", vibes:["after-work","party"], tags:["coffee","smooth","dessert"],
-    en:{name:"Cyber Espresso", jp:"サイバー・エスプレッソ", desc:"Vodka, coffee, cocoa, velvet foam"},
-    jp:{name:"サイバー・エスプレッソ", jp:"Cyber Espresso", desc:"ウォッカ、コーヒー、カカオ、ベルベットフォーム"} },
-];
-
 /* ── PHOTO HELPER ────────────────────────────────────── */
 const usp = (id: string, w: number) =>
   `https://images.unsplash.com/${id}?fm=jpg&q=80&w=${w}&auto=format&fit=crop`;
+
+/* ── RESERVATION TIMES (18:00 to last entry 02:00, every 30 min) ── */
+const TIME_SLOTS = Array.from({ length: 17 }, (_, i) => {
+  const mins = 18 * 60 + i * 30;
+  return `${String(Math.floor(mins / 60) % 24).padStart(2, "0")}:${mins % 60 === 0 ? "00" : "30"}`;
+});
 
 /* ── HERO POOL (14 IDs - rotates daily, new image every day) ── */
 const HERO_POOL = [
@@ -195,7 +174,6 @@ const T = {
     badges:["English-friendly","Tourist approved","Cashless OK","Open till 03:00"],
     menuTitle:"Signature Menu", menuSub:"A short, well-made list - easy to read, made to be remembered.",
     featLabel:"TONIGHT’S PICK",
-    featDesc:"Gin, yuzu and tonic lifted with floral bitters - bright, fragrant, and unmistakably Shinjuku.",
     featNote:"house favourite",
     menuNote:"Allergy information available on request.",
     finderTitle:"Find Your Cocktail", finderSub:"Tell us the mood - our bartender will point you to the right glass.",
@@ -209,7 +187,7 @@ const T = {
     atmosView:"View photo", lightboxClose:"Close photo", lightboxPrev:"Previous photo", lightboxNext:"Next photo",
     atmosCaption:"The counter, 23:15",
     reserveTitle:"Reservations", reserveSub:"A quick request - we confirm by email within 24 hours.",
-    fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
+    fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fTimeAny:"Any time", fGuests:"Guests",
     fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We’ll reply by email within 24 hours. Walk-ins also welcome.",
     fError:"Submission failed. Please try again.",
     sentTitle:"Request received", sentMsg:"We’ll confirm your booking by email within 24 hours. See you soon.",
@@ -241,7 +219,6 @@ const T = {
     badges:["英語対応","観光客に人気","キャッシュレスOK","深夜3時まで"],
     menuTitle:"シグネチャーメニュー", menuSub:"厳選された短いリスト - 読みやすく、記憶に残る。",
     featLabel:"今夜のおすすめ",
-    featDesc:"ジン、ゆず、トニックにフローラルビターズ - 明るく、香り高く、新宿らしい一杯。",
     featNote:"ハウスフェイバリット",
     menuNote:"アレルギー情報はご要望に応じてご提供します。",
     finderTitle:"カクテルを探す", finderSub:"気分を教えてください。バーテンダーが最適なグラスをご案内します。",
@@ -255,7 +232,7 @@ const T = {
     atmosView:"写真を見る", lightboxClose:"写真を閉じる", lightboxPrev:"前の写真", lightboxNext:"次の写真",
     atmosCaption:"カウンター、23:15",
     reserveTitle:"予約", reserveSub:"簡単なリクエスト - 24時間以内にメールで確認します。",
-    fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
+    fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fTimeAny:"指定なし", fGuests:"人数",
     fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fSending:"送信中…", fHint:"24時間以内にメールにてご返信いたします。",
     fError:"送信に失敗しました。再度お試しください。",
     sentTitle:"リクエスト受付完了", sentMsg:"24時間以内にご予約確認メールをお送りします。近いうちにお会いしましょう。",
@@ -297,6 +274,10 @@ function scoreItem(item: MenuItem, mood: string, sweet: string, likes: string, a
 function hanaResponse(q: string, lang: Lang): string {
   const text = q.toLowerCase();
   const jp = lang === "jp";
+  if (/tonight|today|pick|special|今夜|今日/.test(text)) {
+    const pick = tonightsPick();
+    return jp ? `今夜のおすすめは${pick.jp.name}（${pick.price}）。${pick.jp.desc}。✦` : `Tonight’s pick is the ${pick.en.name} (${pick.price}) - ${pick.en.desc.toLowerCase()}. ✦`;
+  }
   if (/hours?|open|clos|time|営業|開|閉/.test(text))
     return jp ? "毎日18時から深夜3時まで営業しています。最終入場は2時です。✦" : "We’re open daily 18:00–03:00, last entry 02:00. ✦";
   if (/address|where|location|direction|access|map|how.*get|find|住所|場所|アクセス|行き方|駅/.test(text))
@@ -352,6 +333,8 @@ export function NeonKissaApp() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [openNow, setOpenNow] = useState<boolean | null>(null);
+  const [pickIdx, setPickIdx] = useState(1); // Shinjuku Bloom until the client knows the date
+  const [minDate, setMinDate] = useState<string | undefined>(undefined);
   const [activeSection, setActiveSection] = useState<string>("");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const chatBodyRef = useRef<HTMLDivElement>(null);
@@ -383,15 +366,16 @@ export function NeonKissaApp() {
     try { const s = localStorage.getItem("nk-lang"); if (s === "en" || s === "jp") setLang(s as Lang); } catch {}
     try { const p = localStorage.getItem("nk-pal"); if (["ruby","cyber","amber","jade"].includes(p!)) setPalette(p as Palette); } catch {}
     // days since epoch → daily rotation; weeks → weekly theme switch
-    const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-    const weeksSinceEpoch = Math.floor(daysSinceEpoch / 7);
-    setHeroUrl(usp(HERO_POOL[daysSinceEpoch % HERO_POOL.length], 2400));
+    const days = daysSinceEpoch();
+    const weeksSinceEpoch = Math.floor(days / 7);
+    setHeroUrl(usp(HERO_POOL[days % HERO_POOL.length], 2400));
     const themeIdx = weeksSinceEpoch % ATMOS_POOL.length;
-    const dayOffset = daysSinceEpoch % 7; // slide 7-photo window forward each day
+    const dayOffset = days % 7; // slide 7-photo window forward each day
     setAtmosPhotos(ATMOS_POOL[themeIdx].slice(dayOffset, dayOffset + 7));
-    setFeatImg(FEAT_POOL[daysSinceEpoch % FEAT_POOL.length]);
-    const nowH = new Date().getHours() + new Date().getMinutes() / 60;
-    setOpenNow(nowH >= 18 || nowH < 3); // open daily 18:00–03:00
+    setFeatImg(FEAT_POOL[days % FEAT_POOL.length]);
+    setPickIdx(MENU.indexOf(tonightsPick()));
+    setOpenNow(isOpenNow()); // Tokyo time, whatever the visitor's timezone
+    setMinDate(tokyoDateISO());
   }, []);
 
   useEffect(() => {
@@ -613,6 +597,10 @@ export function NeonKissaApp() {
   const NAV_LINKS = ["#menu","#finder","#atmosphere","#access"] as const;
   const NAV_KEYS  = ["navMenu","navFinder","navAtmos","navAccess"] as const;
   const NAV_IDS   = ["menu","finder","atmosphere","access"] as const;
+
+  /* Tonight's Pick - one drink per night, the rest fill the grid below */
+  const pick = MENU[pickIdx];
+  const pickD = lang === "jp" ? pick.jp : pick.en;
 
   /* Current atmosphere tile IDs (updates once per day on mount) */
   const atmos = atmosPhotos;
@@ -840,16 +828,16 @@ export function NeonKissaApp() {
           </div>
           <div className="p-[24px] md:p-[38px_40px] flex flex-col justify-center">
             <div className="flex items-start gap-3">
-              <span className="flex-shrink-0 mt-[2px] md:mt-[5px]" style={{ color:"var(--accent-text)" }}>{GlassSVG.coupe}</span>
+              <span className="flex-shrink-0 mt-[2px] md:mt-[5px]" style={{ color:"var(--accent-text)" }}>{GlassSVG[pick.glass]}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col items-start">
-                  <h3 className="m-0 font-black text-[24px] md:text-[30px]">Shinjuku Bloom</h3>
+                  <h3 className="m-0 font-black text-[24px] md:text-[30px]">{pickD.name}</h3>
                   <span aria-hidden className="rounded-full flex-shrink-0 my-[8px]" style={{ width:28, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
-                  <span className="mono text-[13px] md:text-[14px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
+                  <span className="mono text-[13px] md:text-[14px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{pickD.jp}</span>
                 </div>
-                <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
+                <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{pickD.feat}</p>
                 <div className="mt-[18px] md:mt-[22px] flex items-center gap-[18px]">
-                  <span className="mono text-[20px] md:text-[22px]" style={{ color:"var(--accent)" }}>¥1,600</span>
+                  <span className="mono text-[20px] md:text-[22px]" style={{ color:"var(--accent)" }}>{pick.price}</span>
                   <span className="mono text-[10px] tracking-[.1em] uppercase" style={{ color:"#8a7f78" }}>{t.featNote}</span>
                 </div>
               </div>
@@ -859,7 +847,7 @@ export function NeonKissaApp() {
 
         {/* Menu grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[14px] md:gap-[18px]">
-          {MENU.filter(it => it.glass !== "coupe").map(item => {
+          {MENU.filter(it => it !== pick).map(item => {
             const d = lang === "jp" ? item.jp : item.en;
             return (
               <div key={item.glass}
@@ -1033,8 +1021,11 @@ export function NeonKissaApp() {
                     <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fEmail}</span><input name="email" required type="email" className={inputCls} /></label>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fDate}</span><input name="date" type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
-                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fTime}</span><input name="time" type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fDate}</span><input name="date" type="date" min={minDate} className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fTime}</span><select name="time" defaultValue="" className={inputCls} style={{ colorScheme:"dark" }}>
+                        <option value="">{t.fTimeAny}</option>
+                        {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
+                      </select></label>
                     <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fGuests}</span><input name="guests" type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
                   </div>
                   <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fMsg}</span><textarea name="message" rows={3} className={inputCls + " resize-y"} /></label>
