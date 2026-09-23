@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactElement } from "react";
 import Image from "next/image";
 import { AtmosphereLightbox } from "./AtmosphereLightbox";
+import { MENU, type Glass, type MenuItem, isOpenNow, tokyoDateISO, daysSinceEpoch, tonightsPick } from "@/lib/menu";
 
 /* ── CONFIG ──────────────────────────────────────────── */
 // Sign up free at formspree.io and replace with your actual form ID
@@ -11,18 +12,6 @@ const FORMSPREE_ID = "mwvdobgy";
 /* ── TYPES ───────────────────────────────────────────── */
 type Lang = "en" | "jp";
 type Palette = "ruby" | "cyber" | "amber" | "jade";
-type Glass = "highball" | "coupe" | "rocks" | "espresso";
-interface MenuItem {
-  glass: Glass;
-  price: string;
-  priceYen: number;
-  base: string;
-  sweetness: string;
-  vibes: string[];
-  tags: string[];
-  en: { name: string; jp: string; desc: string };
-  jp: { name: string; jp: string; desc: string };
-}
 interface ChatMsg { role: "user" | "bot"; text: string }
 
 /* ── SCROLL REVEAL HOOK ──────────────────────────────── */
@@ -66,26 +55,16 @@ const GlassSVG: Record<Glass, ReactElement> = {
   ),
 };
 
-/* ── MENU DATA ───────────────────────────────────────── */
-const MENU: MenuItem[] = [
-  { glass:"highball", price:"¥1,200", priceYen:1200, base:"whiskey", sweetness:"balanced", vibes:["after-work","chill"], tags:["sparkling","refreshing","smoky"],
-    en:{name:"Neon Highball", jp:"ネオン・ハイボール", desc:"Whiskey, citrus, soda, smoked ice"},
-    jp:{name:"ネオン・ハイボール", jp:"Neon Highball", desc:"ウイスキー、柑橘、ソーダ、スモークアイス"} },
-  { glass:"coupe", price:"¥1,600", priceYen:1600, base:"gin", sweetness:"balanced", vibes:["romantic","chill"], tags:["yuzu","floral","refreshing"],
-    en:{name:"Shinjuku Bloom", jp:"新宿ブルーム", desc:"Gin, yuzu, tonic, floral bitters"},
-    jp:{name:"新宿ブルーム", jp:"Shinjuku Bloom", desc:"ジン、ゆず、トニック、フローラルビターズ"} },
-  { glass:"rocks", price:"¥1,400", priceYen:1400, base:"umeshu", sweetness:"sweet", vibes:["after-work","romantic","chill"], tags:["plum","smooth","spice"],
-    en:{name:"Midnight Ume", jp:"ミッドナイト梅", desc:"Umeshu, plum, spice, lime"},
-    jp:{name:"ミッドナイト梅", jp:"Midnight Ume", desc:"梅酒、プラム、スパイス、ライム"} },
-  { glass:"espresso", price:"¥1,700", priceYen:1700, base:"vodka", sweetness:"balanced", vibes:["after-work","party"], tags:["coffee","smooth","dessert"],
-    en:{name:"Cyber Espresso", jp:"サイバー・エスプレッソ", desc:"Vodka, coffee, cocoa, velvet foam"},
-    jp:{name:"サイバー・エスプレッソ", jp:"Cyber Espresso", desc:"ウォッカ、コーヒー、カカオ、ベルベットフォーム"} },
-];
-
 /* ── PHOTO HELPER ────────────────────────────────────── */
 /* Photos are committed under public/photos; next/image resizes them
    per the `sizes` each call site declares. */
 const photo = (id: string) => `/photos/${id}.jpg`;
+
+/* ── RESERVATION TIMES (18:00 to last entry 02:00, every 30 min) ── */
+const TIME_SLOTS = Array.from({ length: 17 }, (_, i) => {
+  const mins = 18 * 60 + i * 30;
+  return `${String(Math.floor(mins / 60) % 24).padStart(2, "0")}:${mins % 60 === 0 ? "00" : "30"}`;
+});
 
 /* ── HERO POOL (14 IDs - rotates daily, new image every day) ── */
 const HERO_POOL = [
@@ -184,6 +163,7 @@ const FEAT_POOL = [
 const T = {
   en: {
     navMenu:"Menu", navFinder:"Finder", navAtmos:"Atmosphere", navReserve:"Reserve", navAccess:"Access",
+    prefsLabel:"Language and mood", prefsLang:"Language", prefsMood:"Mood",
     kicker:"Shinjuku · Tokyo Nightlife",
     heroA:"A cyber-modern", heroB:"cocktail hideout.",
     heroSub1:"Bilingual, walk-in friendly, and built for the neon hours.",
@@ -195,7 +175,6 @@ const T = {
     badges:["English-friendly","Tourist approved","Cashless OK","Open till 03:00"],
     menuTitle:"Signature Menu", menuSub:"A short, well-made list - easy to read, made to be remembered.",
     featLabel:"TONIGHT’S PICK",
-    featDesc:"Gin, yuzu and tonic lifted with floral bitters - bright, fragrant, and unmistakably Shinjuku.",
     featNote:"house favourite",
     menuNote:"Allergy information available on request.",
     finderTitle:"Find Your Cocktail", finderSub:"Tell us the mood - our bartender will point you to the right glass.",
@@ -209,7 +188,7 @@ const T = {
     atmosView:"View photo", lightboxClose:"Close photo", lightboxPrev:"Previous photo", lightboxNext:"Next photo",
     atmosCaption:"The counter, 23:15",
     reserveTitle:"Reservations", reserveSub:"A quick request - we confirm by email within 24 hours.",
-    fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fGuests:"Guests",
+    fName:"Name", fEmail:"Email", fDate:"Date", fTime:"Time", fTimeAny:"Any time", fGuests:"Guests",
     fMsg:"Message (optional)", fSend:"Send request", fSending:"Sending…", fHint:"We’ll reply by email within 24 hours. Walk-ins also welcome.",
     fError:"Submission failed. Please try again.",
     sentTitle:"Request received", sentMsg:"We’ll confirm your booking by email within 24 hours. See you soon.",
@@ -229,6 +208,7 @@ const T = {
   },
   jp: {
     navMenu:"メニュー", navFinder:"カクテル", navAtmos:"雰囲気", navReserve:"予約", navAccess:"アクセス",
+    prefsLabel:"言語とムード", prefsLang:"言語", prefsMood:"ムード",
     kicker:"新宿・東京ナイトライフ",
     heroA:"サイバーモダンな", heroB:"カクテルの隠れ家。",
     heroSub1:"バイリンガル対応、ウォークイン歓迎、ネオンの夜のために。",
@@ -240,7 +220,6 @@ const T = {
     badges:["英語対応","観光客に人気","キャッシュレスOK","深夜3時まで"],
     menuTitle:"シグネチャーメニュー", menuSub:"厳選された短いリスト - 読みやすく、記憶に残る。",
     featLabel:"今夜のおすすめ",
-    featDesc:"ジン、ゆず、トニックにフローラルビターズ - 明るく、香り高く、新宿らしい一杯。",
     featNote:"ハウスフェイバリット",
     menuNote:"アレルギー情報はご要望に応じてご提供します。",
     finderTitle:"カクテルを探す", finderSub:"気分を教えてください。バーテンダーが最適なグラスをご案内します。",
@@ -254,7 +233,7 @@ const T = {
     atmosView:"写真を見る", lightboxClose:"写真を閉じる", lightboxPrev:"前の写真", lightboxNext:"次の写真",
     atmosCaption:"カウンター、23:15",
     reserveTitle:"予約", reserveSub:"簡単なリクエスト - 24時間以内にメールで確認します。",
-    fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fGuests:"人数",
+    fName:"お名前", fEmail:"メールアドレス", fDate:"日付", fTime:"時間", fTimeAny:"指定なし", fGuests:"人数",
     fMsg:"メッセージ（任意）", fSend:"リクエストを送る", fSending:"送信中…", fHint:"24時間以内にメールにてご返信いたします。",
     fError:"送信に失敗しました。再度お試しください。",
     sentTitle:"リクエスト受付完了", sentMsg:"24時間以内にご予約確認メールをお送りします。近いうちにお会いしましょう。",
@@ -296,6 +275,10 @@ function scoreItem(item: MenuItem, mood: string, sweet: string, likes: string, a
 function hanaResponse(q: string, lang: Lang): string {
   const text = q.toLowerCase();
   const jp = lang === "jp";
+  if (/tonight|today|pick|special|今夜|今日/.test(text)) {
+    const pick = tonightsPick();
+    return jp ? `今夜のおすすめは${pick.jp.name}（${pick.price}）。${pick.jp.desc}。✦` : `Tonight’s pick is the ${pick.en.name} (${pick.price}) - ${pick.en.desc.toLowerCase()}. ✦`;
+  }
   if (/hours?|open|clos|time|営業|開|閉/.test(text))
     return jp ? "毎日18時から深夜3時まで営業しています。最終入場は2時です。✦" : "We’re open daily 18:00–03:00, last entry 02:00. ✦";
   if (/address|where|location|direction|access|map|how.*get|find|住所|場所|アクセス|行き方|駅/.test(text))
@@ -346,14 +329,18 @@ export function NeonKissaApp() {
   const [atmosPhotos, setAtmosPhotos] = useState<string[]>(ATMOS_POOL[0].slice(0, 7));
   const [featImg, setFeatImg] = useState("");
   const [navOpen, setNavOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [openNow, setOpenNow] = useState<boolean | null>(null);
+  const [pickIdx, setPickIdx] = useState(1); // Shinjuku Bloom until the client knows the date
+  const [minDate, setMinDate] = useState<string | undefined>(undefined);
   const [activeSection, setActiveSection] = useState<string>("");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const lastTileRef = useRef<HTMLButtonElement | null>(null);
+  const prefsRef = useRef<HTMLDivElement>(null);
 
   const openLightbox = useCallback((i: number, el: HTMLButtonElement | null) => {
     lastTileRef.current = el;
@@ -380,15 +367,16 @@ export function NeonKissaApp() {
     try { const s = localStorage.getItem("nk-lang"); if (s === "en" || s === "jp") setLang(s as Lang); } catch {}
     try { const p = localStorage.getItem("nk-pal"); if (["ruby","cyber","amber","jade"].includes(p!)) setPalette(p as Palette); } catch {}
     // days since epoch → daily rotation; weeks → weekly theme switch
-    const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-    const weeksSinceEpoch = Math.floor(daysSinceEpoch / 7);
-    setHeroUrl(photo(HERO_POOL[daysSinceEpoch % HERO_POOL.length]));
+    const days = daysSinceEpoch();
+    const weeksSinceEpoch = Math.floor(days / 7);
+    setHeroUrl(photo(HERO_POOL[days % HERO_POOL.length]));
     const themeIdx = weeksSinceEpoch % ATMOS_POOL.length;
-    const dayOffset = daysSinceEpoch % 7; // slide 7-photo window forward each day
+    const dayOffset = days % 7; // slide 7-photo window forward each day
     setAtmosPhotos(ATMOS_POOL[themeIdx].slice(dayOffset, dayOffset + 7));
-    setFeatImg(FEAT_POOL[daysSinceEpoch % FEAT_POOL.length]);
-    const nowH = new Date().getHours() + new Date().getMinutes() / 60;
-    setOpenNow(nowH >= 18 || nowH < 3); // open daily 18:00–03:00
+    setFeatImg(FEAT_POOL[days % FEAT_POOL.length]);
+    setPickIdx(MENU.indexOf(tonightsPick()));
+    setOpenNow(isOpenNow()); // Tokyo time, whatever the visitor's timezone
+    setMinDate(tokyoDateISO());
   }, []);
 
   useEffect(() => {
@@ -418,6 +406,21 @@ export function NeonKissaApp() {
     document.addEventListener("click", close, { once: true });
     return () => document.removeEventListener("click", close);
   }, [navOpen]);
+
+  /* Close the preferences popover on an outside click or Escape */
+  useEffect(() => {
+    if (!prefsOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!prefsRef.current?.contains(e.target as Node)) setPrefsOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPrefsOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [prefsOpen]);
 
   /* Scroll-to-top visibility + progress beam */
   useEffect(() => {
@@ -583,9 +586,13 @@ export function NeonKissaApp() {
   const inputCls = "w-full bg-black/35 border border-white/10 rounded-[10px] px-[13px] py-[11px] text-white text-sm font-[inherit] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]";
   // Shared form-field label style - matches the finder's uppercase-mono labels
   const fieldLabelCls = "mono text-[11px] tracking-[.16em] uppercase";
-  const NAV_LINKS = ["#menu","#finder","#atmosphere","#reserve","#access"] as const;
-  const NAV_KEYS  = ["navMenu","navFinder","navAtmos","navReserve","navAccess"] as const;
-  const NAV_IDS   = ["menu","finder","atmosphere","reserve","access"] as const;
+  const NAV_LINKS = ["#menu","#finder","#atmosphere","#access"] as const;
+  const NAV_KEYS  = ["navMenu","navFinder","navAtmos","navAccess"] as const;
+  const NAV_IDS   = ["menu","finder","atmosphere","access"] as const;
+
+  /* Tonight's Pick - one drink per night, the rest fill the grid below */
+  const pick = MENU[pickIdx];
+  const pickD = lang === "jp" ? pick.jp : pick.en;
 
   /* Current atmosphere tile IDs (updates once per day on mount) */
   const atmos = atmosPhotos;
@@ -607,19 +614,19 @@ export function NeonKissaApp() {
 
       {/* ── HEADER ──────────────────────────────────── */}
       <header className="sticky top-0 z-50 backdrop-blur-[14px] bg-[rgba(11,8,9,.72)] border-b border-white/[.08]">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 h-[60px] md:h-[68px] flex items-center justify-between gap-3">
+        {/* Three zones: logo left, nav centred, controls right */}
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 h-[60px] md:h-[68px] flex items-center justify-between gap-3 lg:grid lg:grid-cols-[1fr_auto_1fr]">
 
           {/* Logo */}
-          <a href="#top" className="flex items-center gap-[10px] no-underline flex-shrink-0" onClick={() => setNavOpen(false)}>
+          <a href="#top" className="flex items-center gap-[10px] no-underline flex-shrink-0 lg:justify-self-start" onClick={() => setNavOpen(false)}>
             <span className="w-[8px] h-[8px] rounded-full bg-[var(--accent)] flex-shrink-0"
               style={{ boxShadow:"0 0 10px var(--accent),0 0 20px color-mix(in srgb,var(--accent) 60%,transparent)", animation:"nkFlicker 4s infinite" }} />
             <span className="mono font-bold tracking-[.28em] text-[13px] md:text-[14px] text-white"
               style={{ textShadow:"0 0 14px color-mix(in srgb,var(--accent) 50%,transparent)" }}>NEON KISSA</span>
-            <span className="hidden sm:inline text-[12px] tracking-[.12em]" style={{ color:"#8a7f78" }}>ネオン喫茶</span>
           </a>
 
           {/* Desktop nav - with active scroll-spy highlight */}
-          <nav className="hidden md:flex items-center gap-[30px] mono text-[11.5px] tracking-[.12em] uppercase">
+          <nav className="hidden md:flex items-center gap-[24px] lg:gap-[34px] lg:justify-self-center mono text-[11.5px] tracking-[.12em] uppercase">
             {NAV_KEYS.map((k, i) => {
               const isActive = activeSection === NAV_IDS[i];
               return (
@@ -637,30 +644,61 @@ export function NeonKissaApp() {
           </nav>
 
           {/* Right controls */}
-          <div className="flex items-center gap-[10px] md:gap-[14px]">
-            {/* Palette swatches */}
-            <div className="flex items-center gap-[6px] pr-[10px] md:pr-[14px] border-r border-white/10">
-              {PALETTES.map(p => (
-                <button key={p.key} onClick={() => setPalette(p.key)} aria-label={`${p.label} theme`}
-                  className="w-[12px] h-[12px] md:w-[14px] md:h-[14px] rounded-full border-none cursor-pointer p-0 outline-none transition-all hover:scale-[1.18]"
-                  style={{ background:p.color, boxShadow:palette===p.key?"0 0 0 2.5px rgba(255,255,255,.7)":"none" }} />
-              ))}
+          <div className="flex items-center gap-[10px] md:gap-[12px] lg:justify-self-end">
+
+            {/* Language + palette, behind one pill */}
+            <div className="relative" ref={prefsRef}>
+              <button
+                onClick={e => { e.stopPropagation(); setPrefsOpen(o => !o); }}
+                aria-label={t.prefsLabel}
+                aria-expanded={prefsOpen}
+                aria-haspopup="true"
+                className="flex items-center gap-[8px] h-[32px] px-[11px] md:px-[12px] rounded-full bg-transparent border border-white/[.16] cursor-pointer mono text-[11px] tracking-[.12em] text-[var(--subtle)] transition-colors hover:border-white/[.32] hover:text-white">
+                <span className="w-[11px] h-[11px] rounded-full flex-shrink-0"
+                  style={{ background:"var(--accent)", boxShadow:"0 0 8px color-mix(in srgb,var(--accent) 50%,transparent)" }} />
+                <span>{lang.toUpperCase()}</span>
+                <svg width="9" height="6" viewBox="0 0 9 6" fill="none" aria-hidden="true" className="transition-transform"
+                  style={{ transform: prefsOpen ? "rotate(180deg)" : "none" }}>
+                  <path d="M1 1.2 4.5 4.6 8 1.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {prefsOpen && (
+                <div role="dialog" aria-label={t.prefsLabel}
+                  className="nk-prefs-pop absolute top-[42px] right-0 w-[212px] p-[14px] rounded-[16px] border border-white/[.12] backdrop-blur-[14px] z-10"
+                  style={{ background:"rgba(16,12,13,.97)", boxShadow:"0 18px 40px rgba(0,0,0,.62)" }}>
+
+                  <div className="mono text-[9.5px] tracking-[.22em] uppercase text-[var(--muted)]">{t.prefsLang}</div>
+                  <div className="mt-[9px] flex border border-white/[.14] rounded-full overflow-hidden mono text-[11px] tracking-[.1em]">
+                    {(["en","jp"] as const).map(l => (
+                      <button key={l} onClick={() => setLang(l)} aria-pressed={lang===l}
+                        className={`flex-1 py-[8px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)] hover:bg-white/[.04]"}`}>
+                        {l.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-[16px] mono text-[9.5px] tracking-[.22em] uppercase text-[var(--muted)]">{t.prefsMood}</div>
+                  <div className="mt-[5px] flex gap-[2px]">
+                    {PALETTES.map(p => (
+                      <button key={p.key} onClick={() => setPalette(p.key)} aria-label={`${p.label} theme`} aria-pressed={palette===p.key}
+                        className="flex items-center justify-center w-[44px] h-[38px] rounded-[10px] border-none bg-transparent cursor-pointer p-0 outline-none transition-transform hover:scale-[1.1]">
+                        <span className="w-[15px] h-[15px] rounded-full"
+                          style={{ background:p.color, boxShadow:palette===p.key?"0 0 0 2.5px rgba(255,255,255,.75)":"none" }} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            {/* Lang toggle */}
-            <div className="flex border border-white/[.14] rounded-full overflow-hidden mono text-[11px] tracking-[.1em]">
-              {(["en","jp"] as const).map(l => (
-                <button key={l} onClick={() => setLang(l)}
-                  className={`px-[14px] md:px-[18px] py-[6px] border-none cursor-pointer font-[inherit] text-[inherit] transition-all ${lang===l?"bg-white/10 text-white":"bg-transparent text-[var(--subtle)]"}`}>
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
+
             {/* Reserve button - hidden on mobile */}
             <a href="#reserve"
-              className="hidden sm:inline-flex items-center justify-center ml-[8px] mono text-[11.5px] tracking-[.16em] uppercase font-bold no-underline px-5 py-[9px] rounded-full transition-all hover:brightness-110 hover:-translate-y-[1px] active:scale-95"
+              className="hidden sm:inline-flex items-center justify-center mono text-[11.5px] tracking-[.16em] uppercase font-bold no-underline px-5 py-[9px] rounded-full transition-all hover:brightness-110 hover:-translate-y-[1px] active:scale-95"
               style={{ color:"#0b0809", border:"1px solid transparent", background:"var(--accent)", boxShadow:"0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)" }}>
               {t.navReserve}
             </a>
+
             {/* Hamburger - mobile only */}
             <button
               onClick={e => { e.stopPropagation(); setNavOpen(o => !o); }}
@@ -782,16 +820,16 @@ export function NeonKissaApp() {
           </div>
           <div className="p-[24px] md:p-[38px_40px] flex flex-col justify-center">
             <div className="flex items-start gap-3">
-              <span className="flex-shrink-0 mt-[2px] md:mt-[5px]" style={{ color:"var(--accent-text)" }}>{GlassSVG.coupe}</span>
+              <span className="flex-shrink-0 mt-[2px] md:mt-[5px]" style={{ color:"var(--accent-text)" }}>{GlassSVG[pick.glass]}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col items-start">
-                  <h3 className="m-0 font-black text-[24px] md:text-[30px]">Shinjuku Bloom</h3>
+                  <h3 className="m-0 font-black text-[24px] md:text-[30px]">{pickD.name}</h3>
                   <span aria-hidden className="rounded-full flex-shrink-0 my-[8px]" style={{ width:28, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
-                  <span className="mono text-[13px] md:text-[14px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{lang==="jp"?"Shinjuku Bloom":"新宿ブルーム"}</span>
+                  <span className="mono text-[13px] md:text-[14px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{pickD.jp}</span>
                 </div>
-                <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{t.featDesc}</p>
+                <p className="mt-[12px] md:mt-[14px] text-[14px] md:text-[15px] leading-[1.6]" style={{ color:"var(--subtle)", maxWidth:"42ch" }}>{pickD.feat}</p>
                 <div className="mt-[18px] md:mt-[22px] flex items-center gap-[18px]">
-                  <span className="mono text-[20px] md:text-[22px]" style={{ color:"var(--accent)" }}>¥1,600</span>
+                  <span className="mono text-[20px] md:text-[22px]" style={{ color:"var(--accent)" }}>{pick.price}</span>
                   <span className="mono text-[10px] tracking-[.1em] uppercase" style={{ color:"#8a7f78" }}>{t.featNote}</span>
                 </div>
               </div>
@@ -801,7 +839,7 @@ export function NeonKissaApp() {
 
         {/* Menu grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-[14px] md:gap-[18px]">
-          {MENU.filter(it => it.glass !== "coupe").map(item => {
+          {MENU.filter(it => it !== pick).map(item => {
             const d = lang === "jp" ? item.jp : item.en;
             return (
               <div key={item.glass}
@@ -986,8 +1024,11 @@ export function NeonKissaApp() {
                     <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fEmail}</span><input name="email" required type="email" className={inputCls} /></label>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fDate}</span><input name="date" type="date" className={inputCls} style={{ colorScheme:"dark" }} /></label>
-                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fTime}</span><input name="time" type="time" className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fDate}</span><input name="date" type="date" min={minDate} className={inputCls} style={{ colorScheme:"dark" }} /></label>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fTime}</span><select name="time" defaultValue="" className={inputCls} style={{ colorScheme:"dark" }}>
+                        <option value="">{t.fTimeAny}</option>
+                        {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
+                      </select></label>
                     <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fGuests}</span><input name="guests" type="number" min="1" max="12" defaultValue="2" className={inputCls} /></label>
                   </div>
                   <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fMsg}</span><textarea name="message" rows={3} className={inputCls + " resize-y"} /></label>
