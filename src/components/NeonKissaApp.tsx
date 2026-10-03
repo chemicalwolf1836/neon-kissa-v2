@@ -1024,7 +1024,7 @@ export function NeonKissaApp() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fDate}</span><input name="date" type="date" min={minDate} className={inputCls} style={{ colorScheme:"dark" }} /></label>
-                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fTime}</span><select name="time" defaultValue="" className={inputCls} style={{ colorScheme:"dark" }}>
+                    <label className="flex flex-col gap-[7px]"><span className={fieldLabelCls} style={{ color:"var(--subtle)" }}>{t.fTime}</span><select name="time" defaultValue="" className={`${inputCls} nk-select`} style={{ colorScheme:"dark" }}>
                         <option value="">{t.fTimeAny}</option>
                         {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
                       </select></label>
