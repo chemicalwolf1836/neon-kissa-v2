@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactElement } from "react";
 import Image from "next/image";
 import { AtmosphereLightbox } from "./AtmosphereLightbox";
-import { MENU, type Glass, type MenuItem, isOpenNow, tokyoDateISO, daysSinceEpoch, tonightsPick } from "@/lib/menu";
+import { MENU, ZERO_PROOF, SNACKS, type Glass, type MenuItem, type SideItem, isOpenNow, tokyoDateISO, daysSinceEpoch, tonightsPick } from "@/lib/menu";
 
 /* ── CONFIG ──────────────────────────────────────────── */
 // Sign up free at formspree.io and replace with your actual form ID
@@ -175,6 +175,7 @@ const T = {
     menuTitle:"Signature Menu", menuSub:"A short, well-made list - easy to read, made to be remembered.",
     featLabel:"TONIGHT’S PICK",
     featNote:"house favourite",
+    zeroTitle:"Zero-proof", snacksTitle:"Bar snacks",
     menuNote:"Allergy information available on request.",
     finderTitle:"Find Your Cocktail", finderSub:"Tell us the mood - our bartender will point you to the right glass.",
     fMood:"MOOD", fSweet:"SWEETNESS", fLikesLbl:"FLAVOURS YOU LIKE", fLikesPh:"citrus, floral",
@@ -220,6 +221,7 @@ const T = {
     menuTitle:"シグネチャーメニュー", menuSub:"厳選された短いリスト - 読みやすく、記憶に残る。",
     featLabel:"今夜のおすすめ",
     featNote:"ハウスフェイバリット",
+    zeroTitle:"ノンアルコール", snacksTitle:"おつまみ",
     menuNote:"アレルギー情報はご要望に応じてご提供します。",
     finderTitle:"カクテルを探す", finderSub:"気分を教えてください。バーテンダーが最適なグラスをご案内します。",
     fMood:"気分", fSweet:"甘さ", fLikesLbl:"好きなフレーバー", fLikesPh:"柑橘、フローラル",
@@ -284,6 +286,12 @@ function hanaResponse(q: string, lang: Lang): string {
     return jp ? "新宿区歌舞伎町にあります。新宿駅東口から徒歩5分です。✦" : "We’re in Kabukicho, Shinjuku - 5 min walk from Shinjuku Station east exit. ✦";
   if (/reserv|book|seat|table|予約|席|テーブル/.test(text))
     return jp ? "ページ上の予約フォームからリクエストいただけます。24時間以内にメールで確認します。✦" : "Use the Reserve form on this page - we confirm by email within 24 hours. Walk-ins welcome too! ✦";
+  if (/non.?alc|alcohol.?free|zero|mocktail|sober|food|snack|eat|hungry|ノンアル|フード|おつまみ|食べ/.test(text)) {
+    const list = (items: SideItem[]) => items.map(it => `${(jp ? it.jp : it.en).name} ${it.price}`).join(jp ? "、" : ", ");
+    return jp
+      ? `ノンアルコール：${list(ZERO_PROOF)}。おつまみ：${list(SNACKS)}。✦`
+      : `Zero-proof: ${list(ZERO_PROOF)}. Bar snacks: ${list(SNACKS)}. ✦`;
+  }
   if (/menu|cocktail|drink|whiskey|gin|vodka|umeshu|beer|メニュー|カクテル|飲|ウイスキー|梅酒/.test(text))
     return jp ? "シグネチャーカクテルは4種：ネオン・ハイボール¥1,200、新宿ブルーム¥1,600、ミッドナイト梅¥1,400、サイバー・エスプレッソ¥1,700。✦" : "Four cocktails: Neon Highball ¥1,200, Shinjuku Bloom ¥1,600, Midnight Ume ¥1,400, Cyber Espresso ¥1,700. ✦";
   if (/price|cost|how much|¥|値段|料金|いくら/.test(text))
@@ -866,6 +874,12 @@ export function NeonKissaApp() {
             );
           })}
         </div>
+
+        {/* Zero-proof + bar snacks - a quieter list under the cocktail cards */}
+        <div className="mt-[24px] md:mt-[30px] grid grid-cols-1 md:grid-cols-2 gap-x-[40px] gap-y-[28px] border border-white/10 rounded-[18px] p-[22px] md:p-[30px_34px] bg-white/[.02]">
+          <SideList title={t.zeroTitle} items={ZERO_PROOF} lang={lang} />
+          <SideList title={t.snacksTitle} items={SNACKS} lang={lang} />
+        </div>
         <p className="mt-6 md:mt-7 text-center text-[12px] md:text-[13px]" style={{ color:"#7a6f68" }}>{t.menuNote}</p>
       </section>
 
@@ -1321,6 +1335,28 @@ function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; acc
         {title} <span aria-hidden className="inline-block align-middle rounded-full" style={{ width:2, height:".46em", background:"var(--accent)", margin:"0 .3em" }} /> <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>{jp}</span>
       </h2>
       <p className="mt-[8px] md:mt-[10px] text-[14px] md:text-[15px]" style={{ color:"var(--muted)", maxWidth:"52ch", gridColumn:2, gridRow:3 }}>{sub}</p>
+    </div>
+  );
+}
+
+function SideList({ title, items, lang }: { title:string; items:SideItem[]; lang:Lang }) {
+  return (
+    <div>
+      <div className="mono text-[11px] tracking-[.2em] uppercase mb-[6px] md:mb-[8px]" style={{ color:"var(--accent-text)" }}>{title}</div>
+      {items.map(item => {
+        const d = lang === "jp" ? item.jp : item.en;
+        return (
+          <div key={item.en.name} className="flex items-start justify-between gap-[14px] py-[12px] md:py-[13px] border-b border-white/[.07] last:border-b-0">
+            <div className="min-w-0">
+              <p className="m-0 font-bold text-[15px]">
+                {d.name} <span className="mono font-normal text-[11px] tracking-[-0.02em] ml-[4px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
+              </p>
+              <p className="mt-[4px] mb-0 mono text-[12px] tracking-[.01em] leading-[1.5]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+            </div>
+            <span className="mono text-[14px] whitespace-nowrap flex-shrink-0 pt-[1px]" style={{ color:"var(--accent)" }}>{item.price}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }

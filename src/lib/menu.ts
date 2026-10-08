@@ -1,6 +1,6 @@
 /* ── MENU + BAR CLOCK ────────────────────────────────────
    Shared by the page and the Hana API route, so the menu cards,
-   Tonight's Pick and Hana always describe the same drinks. */
+   Tonight's Pick and Hana always describe the same drinks and food. */
 
 export type Glass = "highball" | "coupe" | "rocks" | "espresso";
 
@@ -37,6 +37,42 @@ export const MENU: MenuItem[] = [
       feat:"Vodka, fresh coffee and cocoa under a velvet foam - rich, bold, and the one that keeps the night going."},
     jp:{name:"サイバー・エスプレッソ", jp:"Cyber Espresso", desc:"ウォッカ、コーヒー、カカオ、ベルベットフォーム",
       feat:"ウォッカ、コーヒー、カカオにベルベットフォーム - 濃厚で力強く、夜を続けたくなる一杯。"} },
+];
+
+/* Zero-proof drinks and bar snacks - listed under the cocktails and known to Hana.
+   Not part of the Cocktail Finder or Tonight's Pick. */
+export interface SideItem {
+  price: string;
+  priceYen: number;
+  en: { name: string; jp: string; desc: string };
+  jp: { name: string; jp: string; desc: string };
+}
+
+export const ZERO_PROOF: SideItem[] = [
+  { price:"¥900", priceYen:900,
+    en:{name:"Yuzu Shiso Tonic", jp:"ゆず紫蘇トニック", desc:"Yuzu, shiso, tonic, no alcohol"},
+    jp:{name:"ゆず紫蘇トニック", jp:"Yuzu Shiso Tonic", desc:"ゆず、紫蘇、トニック（ノンアルコール）"} },
+  { price:"¥800", priceYen:800,
+    en:{name:"Ume Soda", jp:"梅ソーダ", desc:"House plum cordial, soda, lime"},
+    jp:{name:"梅ソーダ", jp:"Ume Soda", desc:"自家製梅シロップ、ソーダ、ライム"} },
+  { price:"¥900", priceYen:900,
+    en:{name:"Hojicha Fizz", jp:"ほうじ茶フィズ", desc:"Roasted green tea, citrus, sparkling water"},
+    jp:{name:"ほうじ茶フィズ", jp:"Hojicha Fizz", desc:"ほうじ茶、柑橘、炭酸水"} },
+];
+
+export const SNACKS: SideItem[] = [
+  { price:"¥500", priceYen:500,
+    en:{name:"Otsumami Mix", jp:"おつまみミックス", desc:"Spiced rice crackers and nuts"},
+    jp:{name:"おつまみミックス", jp:"Otsumami Mix", desc:"スパイス柿の種とナッツ"} },
+  { price:"¥600", priceYen:600,
+    en:{name:"Edamame", jp:"枝豆", desc:"Warm, with yuzu salt"},
+    jp:{name:"枝豆", jp:"Edamame", desc:"温かい枝豆、ゆず塩"} },
+  { price:"¥900", priceYen:900,
+    en:{name:"Karaage", jp:"唐揚げ", desc:"Japanese fried chicken, lemon, kewpie mayo"},
+    jp:{name:"唐揚げ", jp:"Karaage", desc:"鶏の唐揚げ、レモン、マヨネーズ"} },
+  { price:"¥800", priceYen:800,
+    en:{name:"Tamago Sando", jp:"たまごサンド", desc:"Soft egg salad on milk bread"},
+    jp:{name:"たまごサンド", jp:"Tamago Sando", desc:"ふわふわ卵サラダの食パンサンド"} },
 ];
 
 /* Tokyo has no daylight saving, so it is always UTC+9. */
