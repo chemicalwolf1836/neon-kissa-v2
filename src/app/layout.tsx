@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     url: "https://neon-kissa-v2.vercel.app",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1608060146923-7b8ab13e22bb?w=1200&h=630&fit=crop&q=80",
+        url: "/photos/og-cover.jpg",
         width: 1200,
         height: 630,
         alt: "Neon Kissa — Tokyo Cocktail Bar",
@@ -49,8 +49,7 @@ const jsonLd = {
   description:
     "A bilingual cocktail hideout in Shinjuku, Tokyo. Walk-in friendly. Open nightly 18:00–03:00.",
   url: "https://neon-kissa-v2.vercel.app",
-  image:
-    "https://images.unsplash.com/photo-1608060146923-7b8ab13e22bb?w=1200&h=630&fit=crop&q=80",
+  image: "https://neon-kissa-v2.vercel.app/photos/og-cover.jpg",
   address: {
     "@type": "PostalAddress",
     streetAddress: "2-2-1 Kabukicho",
