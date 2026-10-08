@@ -1367,8 +1367,8 @@ function SideList({ items, lang }: { items:SideItem[]; lang:Lang }) {
             <div className="min-w-0">
               <p className="m-0 font-bold text-[15px]">
                 {d.name}
-                {/* same accent bar as the section headings */}
-                <span aria-hidden className="inline-block align-middle rounded-full mx-[9px]" style={{ width:2, height:11, background:"var(--accent)", transform:"translateY(-1px)" }} />
+                {/* thin grey line between the two names */}
+                <span aria-hidden className="inline-block align-middle mx-[9px]" style={{ width:1, height:11, background:"rgba(255,255,255,.28)", transform:"translateY(-1px)" }} />
                 <span className="mono font-normal text-[11px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{d.jp}</span>
               </p>
               <p className="mt-[4px] mb-0 mono text-[12px] tracking-[.01em] leading-[1.5]" style={{ color:"var(--muted)" }}>{d.desc}</p>
