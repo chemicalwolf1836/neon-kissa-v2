@@ -875,10 +875,14 @@ export function NeonKissaApp() {
           })}
         </div>
 
-        {/* Zero-proof + bar snacks - a quieter list under the cocktail cards */}
-        <div className="mt-[24px] md:mt-[30px] grid grid-cols-1 md:grid-cols-2 gap-x-[40px] gap-y-[28px] border border-white/10 rounded-[18px] p-[22px] md:p-[30px_34px] bg-white/[.02]">
-          <SideList title={t.zeroTitle} items={ZERO_PROOF} lang={lang} />
-          <SideList title={t.snacksTitle} items={SNACKS} lang={lang} />
+        {/* Zero-proof + bar snacks - compact versions of the cocktail cards */}
+        <SubHead title={t.zeroTitle} alt={lang === "jp" ? "Zero-proof" : "ノンアルコール"} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px] md:gap-[18px]">
+          {ZERO_PROOF.map(item => <SideCard key={item.en.name} item={item} lang={lang} />)}
+        </div>
+        <SubHead title={t.snacksTitle} alt={lang === "jp" ? "Bar snacks" : "おつまみ"} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-[12px] md:gap-[18px]">
+          {SNACKS.map(item => <SideCard key={item.en.name} item={item} lang={lang} />)}
         </div>
         <p className="mt-6 md:mt-7 text-center text-[12px] md:text-[13px]" style={{ color:"#7a6f68" }}>{t.menuNote}</p>
       </section>
@@ -1339,24 +1343,33 @@ function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; acc
   );
 }
 
-function SideList({ title, items, lang }: { title:string; items:SideItem[]; lang:Lang }) {
+function SubHead({ title, alt }: { title:string; alt:string }) {
   return (
-    <div>
-      <div className="mono text-[11px] tracking-[.2em] uppercase mb-[6px] md:mb-[8px]" style={{ color:"var(--accent-text)" }}>{title}</div>
-      {items.map(item => {
-        const d = lang === "jp" ? item.jp : item.en;
-        return (
-          <div key={item.en.name} className="flex items-start justify-between gap-[14px] py-[12px] md:py-[13px] border-b border-white/[.07] last:border-b-0">
-            <div className="min-w-0">
-              <p className="m-0 font-bold text-[15px]">
-                {d.name} <span className="mono font-normal text-[11px] tracking-[-0.02em] ml-[4px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
-              </p>
-              <p className="mt-[4px] mb-0 mono text-[12px] tracking-[.01em] leading-[1.5]" style={{ color:"var(--muted)" }}>{d.desc}</p>
-            </div>
-            <span className="mono text-[14px] whitespace-nowrap flex-shrink-0 pt-[1px]" style={{ color:"var(--accent)" }}>{item.price}</span>
-          </div>
-        );
-      })}
+    <div className="mt-[44px] md:mt-[60px] mb-[16px] md:mb-[22px]">
+      <div className="w-12 md:w-16 h-px mb-[12px] md:mb-[14px]" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
+      <h3 className="m-0 font-black leading-[1.1]" style={{ fontSize:"clamp(20px,2.2vw,28px)" }}>
+        {title} <span aria-hidden className="inline-block align-middle rounded-full" style={{ width:2, height:".46em", background:"var(--accent)", margin:"0 .3em" }} /> <span className="font-medium" style={{ color:"#7a6f68", fontSize:".55em" }}>{alt}</span>
+      </h3>
+    </div>
+  );
+}
+
+function SideCard({ item, lang }: { item:SideItem; lang:Lang }) {
+  const d = lang === "jp" ? item.jp : item.en;
+  return (
+    <div
+      className="relative flex flex-col p-[16px_16px_18px] md:p-[20px_24px_22px] border border-white/10 rounded-[14px] bg-white/[.025] overflow-hidden transition-all duration-[250ms] hover:-translate-y-[3px] max-sm:last:odd:col-span-2"
+      style={{ borderColor:"rgba(255,255,255,.1)" }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor="color-mix(in srgb,var(--accent) 40%,transparent)"; e.currentTarget.style.boxShadow="0 10px 34px color-mix(in srgb,var(--accent) 14%,transparent)"; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(255,255,255,.1)"; e.currentTarget.style.boxShadow="none"; }}>
+      <span className="absolute top-0 right-0 mono text-[13px] md:text-[14px] px-[10px] md:px-[11px] py-[7px] md:py-[8px] rounded-bl-[12px]"
+        style={{ color:"var(--accent)", background:"rgba(11,8,9,.9)", borderLeft:"1px solid rgba(255,255,255,.1)", borderBottom:"1px solid rgba(255,255,255,.1)" }}>{item.price}</span>
+      <div className="flex flex-col items-start mt-[34px] md:mt-[30px]">
+        <p className="m-0 font-bold text-[15px] md:text-[17px] leading-[1.25]">{d.name}</p>
+        <span aria-hidden className="rounded-full flex-shrink-0 my-[7px]" style={{ width:20, height:2, background:"color-mix(in srgb,var(--accent) 60%,transparent)" }} />
+        <span className="mono text-[11px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{d.jp}</span>
+      </div>
+      <p className="mt-[10px] md:mt-[12px] mb-0 mono text-[11.5px] md:text-[12px] tracking-[.01em] leading-[1.55]" style={{ color:"var(--muted)" }}>{d.desc}</p>
     </div>
   );
 }
