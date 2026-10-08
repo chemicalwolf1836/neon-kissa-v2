@@ -876,7 +876,7 @@ export function NeonKissaApp() {
         </div>
 
         {/* Zero-proof + bar snacks - a quieter list under the cocktail cards */}
-        <div className="mt-[24px] md:mt-[30px] grid grid-cols-1 md:grid-cols-2 gap-x-[48px] gap-y-[36px] border border-white/10 rounded-[18px] p-[22px] md:p-[30px_34px] bg-white/[.02]">
+        <div className="mt-[44px] md:mt-[60px] grid grid-cols-1 md:grid-cols-2 gap-x-[48px] gap-y-[36px]">
           <div>
             <SubHead title={t.zeroTitle} alt={lang === "jp" ? "Zero-proof" : "ノンアルコール"} />
             <SideList items={ZERO_PROOF} lang={lang} />
@@ -1360,10 +1360,10 @@ function SubHead({ title, alt }: { title:string; alt:string }) {
 function SideList({ items, lang }: { items:SideItem[]; lang:Lang }) {
   return (
     <div>
-      {items.map(item => {
+      {items.map((item, i) => {
         const d = lang === "jp" ? item.jp : item.en;
         return (
-          <div key={item.en.name} className="flex items-start justify-between gap-[14px] py-[12px] md:py-[13px] border-b border-white/[.07] last:border-b-0">
+          <div key={item.en.name} className="relative flex items-start justify-between gap-[14px] py-[12px] md:py-[13px]">
             <div className="min-w-0">
               <p className="m-0 font-bold text-[15px]">
                 {d.name} <span className="mono font-normal text-[11px] tracking-[-0.02em] ml-[4px]" style={{ color:"#8a7f78" }}>{d.jp}</span>
@@ -1371,6 +1371,11 @@ function SideList({ items, lang }: { items:SideItem[]; lang:Lang }) {
               <p className="mt-[4px] mb-0 mono text-[12px] tracking-[.01em] leading-[1.5]" style={{ color:"var(--muted)" }}>{d.desc}</p>
             </div>
             <span className="mono text-[14px] whitespace-nowrap flex-shrink-0 pt-[1px]" style={{ color:"var(--accent)" }}>{item.price}</span>
+            {/* accent-to-grey row divider, echoing the section heading lines */}
+            {i < items.length - 1 && (
+              <span aria-hidden className="absolute left-0 right-0 bottom-0 h-px"
+                style={{ background:"linear-gradient(90deg,color-mix(in srgb,var(--accent) 45%,transparent),rgba(255,255,255,.06) 60%,transparent)" }} />
+            )}
           </div>
         );
       })}
