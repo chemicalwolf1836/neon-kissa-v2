@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactElement } from "react";
 import Image from "next/image";
 import { AtmosphereLightbox } from "./AtmosphereLightbox";
-import { MENU, type Glass, type MenuItem, isOpenNow, tokyoDateISO, daysSinceEpoch, tonightsPick } from "@/lib/menu";
+import { MENU, ZERO_PROOF, SNACKS, type Glass, type MenuItem, type SideItem, isOpenNow, tokyoDateISO, daysSinceEpoch, tonightsPick } from "@/lib/menu";
 
 /* ── CONFIG ──────────────────────────────────────────── */
 // Sign up free at formspree.io and replace with your actual form ID
@@ -175,6 +175,7 @@ const T = {
     menuTitle:"Signature Menu", menuSub:"A short, well-made list - easy to read, made to be remembered.",
     featLabel:"TONIGHT’S PICK",
     featNote:"house favourite",
+    zeroTitle:"Zero-proof", snacksTitle:"Bar snacks",
     menuNote:"Allergy information available on request.",
     finderTitle:"Find Your Cocktail", finderSub:"Tell us the mood - our bartender will point you to the right glass.",
     fMood:"MOOD", fSweet:"SWEETNESS", fLikesLbl:"FLAVOURS YOU LIKE", fLikesPh:"citrus, floral",
@@ -220,6 +221,7 @@ const T = {
     menuTitle:"シグネチャーメニュー", menuSub:"厳選された短いリスト - 読みやすく、記憶に残る。",
     featLabel:"今夜のおすすめ",
     featNote:"ハウスフェイバリット",
+    zeroTitle:"ノンアルコール", snacksTitle:"おつまみ",
     menuNote:"アレルギー情報はご要望に応じてご提供します。",
     finderTitle:"カクテルを探す", finderSub:"気分を教えてください。バーテンダーが最適なグラスをご案内します。",
     fMood:"気分", fSweet:"甘さ", fLikesLbl:"好きなフレーバー", fLikesPh:"柑橘、フローラル",
@@ -284,6 +286,12 @@ function hanaResponse(q: string, lang: Lang): string {
     return jp ? "新宿区歌舞伎町にあります。新宿駅東口から徒歩5分です。✦" : "We’re in Kabukicho, Shinjuku - 5 min walk from Shinjuku Station east exit. ✦";
   if (/reserv|book|seat|table|予約|席|テーブル/.test(text))
     return jp ? "ページ上の予約フォームからリクエストいただけます。24時間以内にメールで確認します。✦" : "Use the Reserve form on this page - we confirm by email within 24 hours. Walk-ins welcome too! ✦";
+  if (/non.?alc|alcohol.?free|zero|mocktail|sober|food|snack|eat|hungry|ノンアル|フード|おつまみ|食べ/.test(text)) {
+    const list = (items: SideItem[]) => items.map(it => `${(jp ? it.jp : it.en).name} ${it.price}`).join(jp ? "、" : ", ");
+    return jp
+      ? `ノンアルコール：${list(ZERO_PROOF)}。おつまみ：${list(SNACKS)}。✦`
+      : `Zero-proof: ${list(ZERO_PROOF)}. Bar snacks: ${list(SNACKS)}. ✦`;
+  }
   if (/menu|cocktail|drink|whiskey|gin|vodka|umeshu|beer|メニュー|カクテル|飲|ウイスキー|梅酒/.test(text))
     return jp ? "シグネチャーカクテルは4種：ネオン・ハイボール¥1,200、新宿ブルーム¥1,600、ミッドナイト梅¥1,400、サイバー・エスプレッソ¥1,700。✦" : "Four cocktails: Neon Highball ¥1,200, Shinjuku Bloom ¥1,600, Midnight Ume ¥1,400, Cyber Espresso ¥1,700. ✦";
   if (/price|cost|how much|¥|値段|料金|いくら/.test(text))
@@ -866,6 +874,18 @@ export function NeonKissaApp() {
             );
           })}
         </div>
+
+        {/* Zero-proof + bar snacks - a quieter list under the cocktail cards */}
+        <div className="mt-[44px] md:mt-[60px] grid grid-cols-1 md:grid-cols-2 gap-x-[48px] gap-y-[36px]">
+          <div>
+            <SubHead title={t.zeroTitle} alt={lang === "jp" ? "Zero-proof" : "ノンアルコール"} />
+            <SideList items={ZERO_PROOF} lang={lang} />
+          </div>
+          <div>
+            <SubHead title={t.snacksTitle} alt={lang === "jp" ? "Bar snacks" : "おつまみ"} />
+            <SideList items={SNACKS} lang={lang} />
+          </div>
+        </div>
         <p className="mt-6 md:mt-7 text-center text-[12px] md:text-[13px]" style={{ color:"#7a6f68" }}>{t.menuNote}</p>
       </section>
 
@@ -1321,6 +1341,47 @@ function SectionHead({ num, accent, divider, title, jp, sub }: { num:string; acc
         {title} <span aria-hidden className="inline-block align-middle rounded-full" style={{ width:2, height:".46em", background:"var(--accent)", margin:"0 .3em" }} /> <span className="font-medium" style={{ color:"#7a6f68", fontSize:".5em" }}>{jp}</span>
       </h2>
       <p className="mt-[8px] md:mt-[10px] text-[14px] md:text-[15px]" style={{ color:"var(--muted)", maxWidth:"52ch", gridColumn:2, gridRow:3 }}>{sub}</p>
+    </div>
+  );
+}
+
+
+function SubHead({ title, alt }: { title:string; alt:string }) {
+  return (
+    <div className="mb-[8px] md:mb-[10px]">
+      <div className="w-12 md:w-16 h-px mb-[12px] md:mb-[14px]" style={{ background:"linear-gradient(90deg,var(--accent),transparent)" }} />
+      <h3 className="m-0 font-black leading-[1.1]" style={{ fontSize:"clamp(20px,2.2vw,28px)" }}>
+        {title} <span aria-hidden className="inline-block align-middle rounded-full" style={{ width:2, height:".46em", background:"var(--accent)", margin:"0 .3em" }} /> <span className="font-medium" style={{ color:"#7a6f68", fontSize:".55em" }}>{alt}</span>
+      </h3>
+    </div>
+  );
+}
+
+function SideList({ items, lang }: { items:SideItem[]; lang:Lang }) {
+  return (
+    <div>
+      {items.map((item, i) => {
+        const d = lang === "jp" ? item.jp : item.en;
+        return (
+          <div key={item.en.name} className="relative flex items-start justify-between gap-[14px] py-[12px] md:py-[13px]">
+            <div className="min-w-0">
+              <p className="m-0 font-bold text-[15px]">
+                {d.name}
+                {/* thin grey line between the two names */}
+                <span aria-hidden className="inline-block align-middle mx-[9px]" style={{ width:1, height:11, background:"rgba(255,255,255,.28)", transform:"translateY(-1px)" }} />
+                <span className="mono font-normal text-[11px] tracking-[-0.02em]" style={{ color:"#8a7f78" }}>{d.jp}</span>
+              </p>
+              <p className="mt-[4px] mb-0 mono text-[12px] tracking-[.01em] leading-[1.5]" style={{ color:"var(--muted)" }}>{d.desc}</p>
+            </div>
+            <span className="mono text-[14px] whitespace-nowrap flex-shrink-0 pt-[1px]" style={{ color:"var(--accent)" }}>{item.price}</span>
+            {/* accent-to-grey row divider, echoing the section heading lines */}
+            {i < items.length - 1 && (
+              <span aria-hidden className="absolute left-0 right-0 bottom-0 h-px"
+                style={{ background:"linear-gradient(90deg,color-mix(in srgb,var(--accent) 45%,transparent),rgba(255,255,255,.06) 60%,transparent)" }} />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

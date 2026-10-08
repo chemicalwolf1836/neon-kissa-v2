@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { MENU, tonightsPick } from "@/lib/menu";
+import { MENU, ZERO_PROOF, SNACKS, tonightsPick, type SideItem } from "@/lib/menu";
 
 export const runtime = "nodejs";
 
@@ -13,6 +13,9 @@ const SWEETNESS: Record<string, string> = { dry: "Dry", balanced: "Balanced", sw
 const MENU_LINES = MENU.map((it, i) =>
   `${i + 1}. ${it.en.name} (${it.en.jp}) ${it.price} — ${it.en.desc}. ${SWEETNESS[it.sweetness] ?? it.sweetness}; ${it.tags.join(", ")}.`
 ).join("\n");
+
+const sideLines = (items: SideItem[]) =>
+  items.map(it => `- ${it.en.name} (${it.en.jp}) ${it.price} — ${it.en.desc}.`).join("\n");
 
 function systemPrompt() {
   const pick = tonightsPick();
@@ -27,6 +30,12 @@ Bar info:
 
 Cocktail menu (only recommend these ${MENU.length}):
 ${MENU_LINES}
+
+Zero-proof (non-alcoholic) drinks:
+${sideLines(ZERO_PROOF)}
+
+Bar snacks:
+${sideLines(SNACKS)}
 
 Tonight's pick: ${pick.en.name} (${pick.en.jp}).
 
