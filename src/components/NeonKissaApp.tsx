@@ -1133,14 +1133,11 @@ export function NeonKissaApp() {
                   {addrCopied ? t.copied : t.copyAddr}
                 </button>
               </div>
-              <InfoDivider />
               <div>
                 <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.hoursLabel}</div>
                 <div>{t.hours}</div>
               </div>
-              <InfoDivider />
               <WalkDirections t={t} />
-              <InfoDivider />
               <div className="flex gap-[32px] md:gap-[40px]">
                 <div>
                   <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.phoneLabel}</div>
@@ -1447,14 +1444,6 @@ function AtmosTile({ url, col, row, label, caption, counter, onOpen }: { url:str
         </span>
       )}
     </button>
-  );
-}
-
-// Accent-to-grey line between the Find Us details, matching the menu list rows.
-function InfoDivider() {
-  return (
-    <span aria-hidden className="block h-px"
-      style={{ background:"linear-gradient(90deg,color-mix(in srgb,var(--accent) 45%,transparent),rgba(255,255,255,.06) 60%,transparent)" }} />
   );
 }
 
