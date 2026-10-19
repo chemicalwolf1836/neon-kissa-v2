@@ -198,6 +198,7 @@ const T = {
     accessTitle:"Find Us", addrLabel:"ADDRESS", addr:"2-2-1 Kabukicho, Shinjuku-ku, Tokyo",
     hoursLabel:"HOURS", hours:"Daily 18:00–03:00 · Last entry 02:00", phoneLabel:"PHONE",
     walkLabel:"WALKING FROM SHINJUKU STATION", walkTime:"About 5 min from the East Exit",
+    walkShow:"Show walking route", walkHide:"Hide walking route",
     walkSteps:[
       "Leave Shinjuku Station by the East Exit and come up to street level.",
       "Walk north one block to Yasukuni-dori, the wide avenue ahead.",
@@ -252,6 +253,7 @@ const T = {
     accessTitle:"アクセス", addrLabel:"住所", addr:"東京都新宿区歌舞伎町2-2-1",
     hoursLabel:"営業時間", hours:"毎日18:00〜03:00・最終入場02:00", phoneLabel:"電話",
     walkLabel:"新宿駅からの道順", walkTime:"東口から徒歩約5分",
+    walkShow:"道順を表示", walkHide:"道順を閉じる",
     walkSteps:[
       "新宿駅の東口から地上に出ます。",
       "北へ1ブロック進み、大通りの靖国通りへ。",
@@ -1131,11 +1133,14 @@ export function NeonKissaApp() {
                   {addrCopied ? t.copied : t.copyAddr}
                 </button>
               </div>
+              <InfoDivider />
               <div>
                 <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.hoursLabel}</div>
                 <div>{t.hours}</div>
               </div>
+              <InfoDivider />
               <WalkDirections t={t} />
+              <InfoDivider />
               <div className="flex gap-[32px] md:gap-[40px]">
                 <div>
                   <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.phoneLabel}</div>
@@ -1445,25 +1450,45 @@ function AtmosTile({ url, col, row, label, caption, counter, onOpen }: { url:str
   );
 }
 
-// Numbered walking route from Shinjuku Station, shown under Hours in Find Us.
+// Accent-to-grey line between the Find Us details, matching the menu list rows.
+function InfoDivider() {
+  return (
+    <span aria-hidden className="block h-px"
+      style={{ background:"linear-gradient(90deg,color-mix(in srgb,var(--accent) 45%,transparent),rgba(255,255,255,.06) 60%,transparent)" }} />
+  );
+}
+
+// Walking route from Shinjuku Station, behind a toggle under Hours in Find Us.
 function WalkDirections({ t }: { t: (typeof T)["en"] }) {
+  const [open, setOpen] = useState(false);
   return (
     <div>
       <div className="mono text-[11px] tracking-[.16em] uppercase mb-1" style={{ color:"#8a7f78" }}>{t.walkLabel}</div>
       <div className="text-[12px] md:text-[13px] mb-[10px]" style={{ color:"var(--muted)" }}>{t.walkTime}</div>
-      <ol className="m-0 p-0 list-none flex flex-col">
-        {t.walkSteps.map((s, i) => (
-          <li key={i} className="relative flex gap-[12px] pb-[12px] last:pb-0">
-            {i < t.walkSteps.length - 1 && (
-              <span aria-hidden className="absolute left-[10px] top-[22px] bottom-[2px] w-px"
-                style={{ background:"linear-gradient(180deg,color-mix(in srgb,var(--accent) 45%,transparent),rgba(255,255,255,.12))" }} />
-            )}
-            <span aria-hidden className="mono shrink-0 w-[21px] h-[21px] rounded-full inline-flex items-center justify-center text-[10px] font-bold"
-              style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 55%,transparent)" }}>{i + 1}</span>
-            <span className="leading-[1.5] pt-[1px]">{s}</span>
-          </li>
-        ))}
-      </ol>
+      <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} aria-controls="nk-walk-steps"
+        className="inline-flex items-center gap-[7px] mono text-[10px] tracking-[.1em] uppercase px-[11px] py-[6px] rounded-[8px] cursor-pointer font-[inherit] transition-all hover:text-white"
+        style={{ color:"var(--subtle)", background:"none", border:"1px solid rgba(255,255,255,.16)" }}>
+        <span aria-hidden style={{ display:"inline-block", transform:open ? "rotate(90deg)" : "none", transition:"transform .2s" }}>›</span>
+        {open ? t.walkHide : t.walkShow}
+      </button>
+      {open && (
+        <ol id="nk-walk-steps" className="mt-[12px] mb-0 p-0 list-none flex flex-col">
+          {t.walkSteps.map((s, i) => {
+            const last = i === t.walkSteps.length - 1;
+            return (
+              <li key={i} className={`relative flex gap-[12px] ${last ? "" : "pb-[12px]"}`}>
+                {!last && (
+                  <span aria-hidden className="absolute left-[10px] top-[22px] bottom-[2px] w-px"
+                    style={{ background:"linear-gradient(180deg,color-mix(in srgb,var(--accent) 45%,transparent),rgba(255,255,255,.12))" }} />
+                )}
+                <span aria-hidden className="mono shrink-0 w-[21px] h-[21px] rounded-full inline-flex items-center justify-center text-[10px] font-bold"
+                  style={{ color:"var(--accent-text)", border:"1px solid color-mix(in srgb,var(--accent) 55%,transparent)" }}>{i + 1}</span>
+                <span className="leading-[1.5] pt-[1px]">{s}</span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
     </div>
   );
 }
